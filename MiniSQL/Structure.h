@@ -29,6 +29,7 @@ namespace Buffer {
 }
 
 namespace Common {
+
 	enum class CompareType {
 		je = 0, //==
 		jne = 1, //!=
@@ -45,7 +46,7 @@ namespace Common {
 		std::string value; //值 由于不定类型，所以用string存储
 	};
 
-	enum class AttributeType {
+	enum AttributeType {
 		floatT = -1,
 		intT = 0,
 		charT = 1
@@ -54,17 +55,26 @@ namespace Common {
 	class Attribute { //列
 	public:
 		std::string name; //属性名
-		std::string indexName;//index的名称 如果没有index记为""
+		std::string indexName;//index的名称 如果没有index记为"#NULL#"
 		int type; //-1-float  ; 0-int ; >0 - char ; type大于0时表示char*的长度
 		bool unique;//是否unique
 		bool primary;//是否为主键
 		Attribute() {};
+		Attribute(const Attribute& attr)
+		{
+			this->name = attr.name;
+			this->indexName = attr.indexName;
+			this->type = attr.type;
+			this->unique = attr.unique;
+			this->primary = attr.primary;
+			return;
+		}
 		Attribute(std::string _name, std::string _indexName, int _type = 0, bool _unique = 0, bool _primary = 0) {
 			this->name = _name;
 			this->indexName = _indexName;
 			this->type = _type;
-			this->primary = _primary;
 			this->unique = _unique;
+			this->primary = _primary;
 			return;
 		}
 	};
@@ -73,7 +83,6 @@ namespace Common {
 	public:
 		std::string name;//表的名称
 		std::vector<Attribute> attributes; //该表含有的列
-		//
 		int GetDataSize() {
 			int res=0;
 			for (auto atr : this->attributes) {

@@ -1,14 +1,168 @@
-﻿#include "Structure.h"
-#include "BufferManager.h"
+﻿#include<iostream>
+#include<cstdio>
+#include<cstring>
+#include<string>
+#include<exception>
+#include<map>
+#include "API.h"
+#include "Interpreter.h"
+using namespace std;
+using namespace API;
+class miniSQL {
+private:
+	map<string, int>parsemap;
+	Api* api;
+	Interpreter* inter;
+	void Initialize() {
+		parsemap.clear();
+		parsemap["create"] = 1;
+		parsemap["table"] = 2;
+		parsemap["index"] = 3;
+		parsemap["drop"] = 4;
+		parsemap["select"] = 5;
+		parsemap["insert"] = 6;
+		parsemap["delete"] = 7;
+		parsemap["quit"] = 8;
+		parsemap["execfile"] = 9;
+		return;
+	}
+	int Parse_once(istream &fin) {
+		string comm;
+		fin >> comm;
+		map<string, int>::iterator iter = parsemap.find(comm);
+		if (iter == parsemap.end()) {//指令错误
+			return -1;
+		}
+		return iter->second;
+	}
+public:
+	miniSQL() {
+		this->Initialize();
+		api = new Api();
+		inter = new Interpreter();
+		inter->api = api;
+		return;
+	}
+	//运行数据库终端，需指定:输入流，输出流，运行结束提示信息
+	void Run(istream &fin, ostream &fout, string finflag) {
+		cout << "miniSQL running" << endl;
+		bool flag = 1;
+		do {
+			try {
+				int x = Parse_once(fin);
+				switch (x) {
+					case 1: {//create
+						switch (Parse_once(fin)) {
+							case 2: {//create table
+								string tName;
+								inter->GetString(fin, tName);
+								vector<Common::Attribute> attributes = inter->GetAttributes(fin);
+								api->CreateTable(tName, attributes);
+								break;
+							}
+							case 3: {//create index
+								string indexName, tableName,attriName;
+								inter->GetString(fin, indexName);//获取index名
+								inter->GetString(fin, tableName);
+								if (tableName == "on") {//则读取table名
+									inter->GetString(fin, tableName);
+									inter->GetString(fin, attriName);
+								}
+								else {
+									throw(wrong_command_error("no table name"));
+								}
+								api->CreateIndex(indexName, tableName, attriName);
+								inter->ClearCommand(fin);//跳过末尾';'
+								break;
+							}
+							default: {
+								inter->ClearCommand(fin);//抛弃整个错误语句
+								throw(wrong_command_error(""));
+								break;
+							}
+						}
+					}
+					case 4: {//drop
+						switch (Parse_once(fin)) {
+							case 2: {//drop table
+								string tableName, temp;
+								inter->GetString(fin, tableName);//获取table名
+								api->DropTable(tableName);
+								inter->ClearCommand(fin);//跳过末尾';'
+								break;
+							}
+							case 3: {//drop index
+								string indexName,temp;
+								inter->GetString(fin, indexName);//获取index名
+								inter->GetString(fin,temp);
+								if (temp == "on") {//如果指定table，则读取table名
+									inter->GetString(fin, temp);
+								}
+								else {
+									temp = "";
+								}
+								api->DropIndex(indexName,temp);
+								inter->ClearCommand(fin);//跳过末尾';'
+								break;
+							}
+							default: {
+								inter->ClearCommand(fin);//抛弃整个错误语句
+								throw(wrong_command_error(""));
+								break;
+							}
+						}
+					}
+					case 5: {//select
+						
+						break;
+					}
+					case 6: {//insert
 
-//int main()
-//{
-//    std::cout << "Hello World!\n"; 
-//	return 0;
-//}
+					}
+					case 7: {//delete
+						break;
+					}
+					case 8: {//quit
+						flag = 0;
+						break;
+					}
+					case 9: {//exec
+						char fname[30];
+						fin.getline(fname, 30, ';');
+						ifstream tmpin(fname);//打开对应文件
+						Run(tmpin, fout, "exec fin");//递归处理文件读取
+						break;
+					}
+					default: {
+						inter->ClearCommand(fin);//抛弃整个错误语句
+						throw(wrong_command_error(""));
+						break;
+					}
+				}
+			}
+			catch (const exception &ex) {
+				cout << ex.what() << endl;
+			}
+		} while (flag);
+		cout << finflag << endl;
+		return;
+	}
+};
+int main() {
+	/// initialize I/O
+	//freopen("in.txt", "r", stdin);
+	//freopen("out.txt", "w", stdout);
+	std::ios::sync_with_stdio(false);
+	/// start
+	miniSQL* tar = new miniSQL();
+	tar->Run(cin, cout, "quit");
+	//
+	return 0;
+}
 
+/*
 // sample program for BufferManager
-int main()
+int bufmain()
 {
 	Buffer::BufferManager BM; // BM实体
 
@@ -135,3 +289,4 @@ int main()
 
 	return 0;
 }
+*/
