@@ -54,14 +54,30 @@ public:
 					case 1: {//create
 						switch (Parse_once(fin)) {
 							case 2: {//create table
+								string tName;
+								inter->GetString(fin, tName);
+								vector<Common::Attribute> attributes = inter->GetAttributes(fin);
+								api->CreateTable(tName, attributes);
 								break;
 							}
 							case 3: {//create index
+								string indexName, tableName,attriName;
+								inter->GetString(fin, indexName);//获取index名
+								inter->GetString(fin, tableName);
+								if (tableName == "on") {//则读取table名
+									inter->GetString(fin, tableName);
+									inter->GetString(fin, attriName);
+								}
+								else {
+									throw(wrong_command_error("no table name"));
+								}
+								api->CreateIndex(indexName, tableName, attriName);
+								inter->ClearCommand(fin);//跳过末尾';'
 								break;
 							}
 							default: {
 								inter->ClearCommand(fin);//抛弃整个错误语句
-								throw(wrong_command_error());
+								throw(wrong_command_error(""));
 								break;
 							}
 						}
@@ -91,7 +107,7 @@ public:
 							}
 							default: {
 								inter->ClearCommand(fin);//抛弃整个错误语句
-								throw(wrong_command_error());
+								throw(wrong_command_error(""));
 								break;
 							}
 						}
@@ -119,7 +135,7 @@ public:
 					}
 					default: {
 						inter->ClearCommand(fin);//抛弃整个错误语句
-						throw(wrong_command_error());
+						throw(wrong_command_error(""));
 						break;
 					}
 				}

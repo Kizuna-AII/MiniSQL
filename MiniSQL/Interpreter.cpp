@@ -24,7 +24,7 @@ void Interpreter::GetString(std::istream &fin, std::string &str) {
 			}
 			else return;
 		}
-		if (ch == ';') {
+		if (ch == ';' || ch==',') {
 			fin.putback(ch);
 			return;
 		}
@@ -59,7 +59,7 @@ void Interpreter::GetCharValue(std::istream & fin, std::string & str){
 
 std::vector<Common::Compares> Interpreter::GetConditions(std::istream & fin)
 {
-	throw(API::not_completed_exception());
+	throw(API::not_completed_exception(""));
 	return std::vector<Common::Compares>();
 }
 
@@ -67,13 +67,57 @@ std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin)
 {
 	vector<Attribute>res;
 	res.clear();
-
-	throw(API::not_completed_exception());
-	return std::vector<Common::Attribute>();
+	bool flag = 0;
+	string tmp;
+	do {
+		GetString(fin, tmp);
+		if (tmp == "primary") {//处理primary key
+			GetString(fin, tmp);
+			if (tmp == "key") {
+				GetString(fin, tmp);//获取主键值
+				for (int i = 0; i < res.size(); i++) {//暴力查找
+					if (res[i].name == "tmp") {
+						res[i].primary = 1;
+						break;
+					}
+				}
+			}
+			else {
+				throw(API::wrong_command_error(""));
+			}
+		}
+		else {//将tmp视作列名，处理普通列
+			Attribute attri;
+			attri.unique = attri.primary = 0;
+			attri.indexName = "#NULL#";
+			attri.name = tmp;
+			GetString(fin, tmp);//读入类型
+			if (tmp == "int") {
+				attri.type = AttributeType::intT;
+			}
+			else if (tmp == "float") {
+				attri.type = AttributeType::floatT;
+			}
+			else if (tmp == "char") {
+				int x; fin >> x;
+				attri.type = x;
+			}
+			else throw(API::wrong_command_error("属性读取错误"));
+			GetString(fin, tmp);
+			if (tmp == ",")fin.putback(',');//检查是否有unique约束
+			else if (tmp == "unique") {
+				attri.unique = 1;
+			}
+			res.push_back(attri);
+		}
+		GetString(fin, tmp);
+		if (tmp[0] != ',')flag = 1;//如果没有逗号，认为语句结束
+	} while (!flag);
+	return res;
 }
 
 std::string Interpreter::GetValues(std::istream & fin)
 {
-	throw(API::not_completed_exception());
+	throw(API::not_completed_exception(""));
 	return std::string();
 }

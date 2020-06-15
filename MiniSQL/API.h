@@ -17,10 +17,17 @@ namespace API {
 		mexception(const char* _msg) :msg(_msg) {};
 		virtual char const* what() const { return ""; }
 	};
+	//
 	class not_completed_exception : mexception {
+	public:
+		not_completed_exception() { this->msg =""; }
+		not_completed_exception(const char* _msg) { this->msg = _msg; }
 		virtual char const* what() const { return (this->msg + " | function not implemented").c_str(); }
 	};
+	//
 	class wrong_command_error : mexception {
+	public:
+		wrong_command_error(const char* _msg) { this->msg = _msg; }
 		virtual char const* what() const { return "wrong command"; }
 	};
 	
