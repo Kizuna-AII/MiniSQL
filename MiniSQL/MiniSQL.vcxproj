@@ -152,11 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BufferManager.cpp" />
+    <ClCompile Include="IndexManager.cpp" />
     <ClCompile Include="MiniSQL.cpp" />
     <ClCompile Include="RecordM.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BufferManager.h" />
+    <ClInclude Include="IndexManager.h" />
     <ClInclude Include="RecordM.h" />
     <ClInclude Include="Structure.h" />
   </ItemGroup>
