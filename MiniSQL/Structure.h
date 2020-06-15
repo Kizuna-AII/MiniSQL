@@ -29,6 +29,7 @@ namespace Buffer {
 }
 
 namespace Common {
+
 	enum class CompareType {
 		je = 0, //==
 		jne = 1, //!=
