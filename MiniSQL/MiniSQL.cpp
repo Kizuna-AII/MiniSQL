@@ -113,13 +113,51 @@ public:
 						}
 					}
 					case 5: {//select
-						
+						string temp,tableName;
+						vector<Common::Compares> conditions;
+						inter->GetString(fin, temp);
+						if(temp!="*")throw(wrong_command_error(""));
+						inter->GetString(fin, temp);
+						if (temp != "from")throw(wrong_command_error(""));
+						inter->GetString(fin, tableName);
+						if (!inter->PeekEnd(fin)) {
+							inter->GetString(fin, temp);
+							if(temp!="where")throw(wrong_command_error(""));
+							conditions = inter->GetConditions(fin);//获取选择条件
+							api->Select(tableName, &conditions);
+						}
+						else {
+							api->Select(tableName, NULL);//无条件选择
+						}
 						break;
 					}
 					case 6: {//insert
-
+						string temp, tableName;
+						inter->GetString(fin, temp);
+						if (temp != "into")throw(wrong_command_error(""));
+						inter->GetString(fin, tableName);//读取表名
+						inter->GetString(fin, temp);
+						if (temp != "values")throw(wrong_command_error(""));
+						Common::Tuple tuple = inter->GetTuple(fin,tableName);//读取values
+						inter->PeekEnd(fin);
+						api->Insert(tuple, tableName);//insert
+						break;
 					}
 					case 7: {//delete
+						string temp, tableName;
+						vector<Common::Compares> conditions;
+						inter->GetString(fin, temp);
+						if (temp != "from")throw(wrong_command_error(""));
+						inter->GetString(fin, tableName);
+						if (!inter->PeekEnd(fin)) {
+							inter->GetString(fin, temp);
+							if (temp != "where")throw(wrong_command_error(""));
+							conditions = inter->GetConditions(fin);//获取删除条件
+							api->Delete(tableName, &conditions);
+						}
+						else {
+							api->Delete(tableName, NULL);//无条件删除
+						}
 						break;
 					}
 					case 8: {//quit

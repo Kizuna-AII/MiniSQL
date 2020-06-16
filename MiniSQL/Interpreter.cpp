@@ -34,6 +34,17 @@ void Interpreter::GetString(std::istream &fin, std::string &str) {
 	return;
 }
 
+int Interpreter::PeekEnd(std::istream & fin){
+	char ch;
+	ch = fin.peek();
+	while (ch == ' ') { fin >> ch; ch = fin.peek(); }
+	if (ch == EOF || ch == ',' || ch == ';') {
+		fin >> ch;
+		return 1;
+	}
+	return 0;
+}
+
 void Interpreter::GetCharValue(std::istream & fin, std::string & str){
 	str.clear();
 	char ch;
@@ -44,7 +55,7 @@ void Interpreter::GetCharValue(std::istream & fin, std::string & str){
 			fin.putback(ch);
 			return;
 		}
-		if (ch == '"') {//检测两端引号
+		if (ch == '\"' || ch=='\'') {//检测两端引号
 			if (flag) {
 				return;
 			}
@@ -57,10 +68,86 @@ void Interpreter::GetCharValue(std::istream & fin, std::string & str){
 	return;
 }
 
+Common::Tuple Interpreter::GetTuple(std::istream & fin,std::string tableName)
+{
+	Table* table=api->GetTableByName(tableName);
+	Common::Tuple res(*table);//根据表头申请空间
+	int offset = 0;
+	for (int i = 0; i < table->attributes.size(); i++) {
+		char ch;
+		ch = fin.peek();
+		while (ch == ' ' || ch=='(') { fin >> ch; ch = fin.peek(); }//跳过空格和左括号
+		if (table->attributes[i].type == -1) {//float
+			this->PeekEnd(fin);
+			float fl;
+			fin >> fl;
+			res.Set<float>(offset, fl);
+			offset += sizeof(float);
+		}
+		else if (table->attributes[i].type == 0) {//int
+			int num;
+			fin >> num;
+			res.Set<int>(offset, num);
+			offset += sizeof(int);
+		}
+		else if (table->attributes[i].type > 0) {//char
+			string str;
+			this->GetCharValue(fin, str);
+			str.resize(table->attributes[i].type, 0);//长度不足时填充
+			res.Set(offset, str);
+			offset += str.size();
+		}
+	}
+	return res;
+}
+
 std::vector<Common::Compares> Interpreter::GetConditions(std::istream & fin)
 {
-	throw(API::not_completed_exception(""));
-	return std::vector<Common::Compares>();
+	vector<Compares> res;
+	res.clear();
+	Compares tmpCmp;
+	string temp;
+	bool flag = 0;
+	do {
+		this->GetString(fin,temp);
+		tmpCmp.attri = temp;
+		this->GetString(fin, temp);
+		if (temp == ">") {
+			tmpCmp.ctype = CompareType::ja;
+		}
+		else if (temp == ">=") {
+			tmpCmp.ctype = CompareType::jae;
+		}
+		else if (temp == "==") {
+			tmpCmp.ctype = CompareType::je;
+		}
+		else if (temp == "!=") {
+			tmpCmp.ctype = CompareType::jne;
+		}
+		else if (temp == "<") {
+			tmpCmp.ctype = CompareType::jb;
+		}
+		else if (temp == "<=") {
+			tmpCmp.ctype = CompareType::jbe;
+		}
+		else {
+			throw(API::wrong_command_error("wrong symbols"));
+		}
+		this->GetString(fin, temp);
+		tmpCmp.value = temp;
+		if (temp[0] == '\'')temp.erase(0);//如果是字符串，消除首尾引号
+		if (temp[temp.length() - 1] == '\'')temp.erase(temp.length() - 1);
+		res.push_back(tmpCmp);
+		this->GetString(fin, temp);//检查条件是否结束
+		if (temp == "and") {
+			continue;
+		}
+		else {
+			this->PeekEnd(fin);//终止
+			flag = 1;
+		}
+	} while (!flag);
+	return res;
 }
 
 std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin)
@@ -114,10 +201,4 @@ std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin)
 		if (tmp[0] != ',')flag = 1;//如果没有逗号，认为语句结束
 	} while (!flag);
 	return res;
-}
-
-std::string Interpreter::GetValues(std::istream & fin)
-{
-	throw(API::not_completed_exception(""));
-	return std::string();
 }

@@ -42,14 +42,14 @@ namespace API {
 	public:
 		Common::Table* GetTableByName(std::string& tableName);
 		//处理Create Table语句
-		void CreateTable(std::string &tableName, std::vector<Common::Attribute>&attributes);
+		void CreateTable(std::string tableName, std::vector<Common::Attribute>&attributes);
 		//指定index name,所在表格on，所在属性attri，执行Create Index操作
 		void CreateIndex(std::string indexName,std::string on,std::string attri);
-		//处理Select语句
-		void Select(std::vector<std::string>&attri, std::string from, std::vector<Common::Compares>*conditions);
+		//处理Select语句,若conditions为NULL则无条件
+		void Select(std::string from, std::vector<Common::Compares>*conditions);
 		//处理Insert语句,需要解析插入值
-		void Insert(std::vector<std::string>&attri, std::string into);
-		//处理Delete语句
+		void Insert(Common::Tuple &tuple, std::string into);
+		//处理Delete语句,若conditions为NULL则无条件
 		void Delete(std::string from, std::vector<Common::Compares>*conditions);
 		//处理Drop Index，传入要删除的index名和所在table，执行操作
 		void DropIndex(std::string target, std::string from = "");

@@ -108,7 +108,7 @@ namespace Common {
 		}
 		template<class T>
 		void Set(int offset,T value) {//…Ë÷√int∫Õfloat
-			(T*)(this->data + offset) = value;
+			*(T*)(this->data + offset) = value;
 		}
 		template<>
 		void Set(int offset, std::string str) {//…Ë÷√string
