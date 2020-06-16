@@ -1,6 +1,6 @@
 #include "IndexManager.h"
 
-Buffer::BufferManager Index::Tree::BM = Buffer::BufferManager();
+Buffer::BufferManager *Index::Tree::BM = NULL;
 
 int Index::Node::findKeyLoc(std::string _key){
 	// possible optimization: binary search
@@ -65,19 +65,19 @@ Index::Node::Node(int _id){
 }
 
 Index::Node Index::Tree::readNodeFromDisk(int loc){
-	BM.NewPage();
-	BM.SetFilename("../test/" + name + ".index");
-	BM.SetFileOffset(loc * Buffer::BLOCKCAPACITY);
-	BM.Load();
-	return Node(BM.Read());
+	BM->NewPage();
+	BM->SetFilename("../test/" + name + ".index");
+	BM->SetFileOffset(loc * Buffer::BLOCKCAPACITY);
+	BM->Load();
+	return Node(BM->Read());
 }
 
 void Index::Tree::writeNodeToDisk(Node _n){
-	BM.NewPage();
-	BM.Write(_n);
-	BM.SetFilename("../test/" + name + ".index");
-	BM.SetFileOffset(_n.id * Buffer::BLOCKCAPACITY);
-	BM.Save();
+	BM->NewPage();
+	BM->Write(_n);
+	BM->SetFilename("../test/" + name + ".index");
+	BM->SetFileOffset(_n.id * Buffer::BLOCKCAPACITY);
+	BM->Save();
 }
 
 void Index::Tree::splitNode(Node _n){
@@ -90,10 +90,10 @@ void Index::Tree::splitNode(Node _n){
 	sibling.isLeaf = _n.isLeaf;
 	sibling.parent = _n.parent;
 	int mid = _n.key.size() / 2;
-	for(int i = mid; i < _n.key.size(); i++){
+	for(int i = mid; i < _n.key.size(); i++)
 		sibling.key.push_back(_n.key[i]);
+	for(int i = mid; i < _n.ptr.size(); i++)
 		sibling.ptr.push_back(_n.ptr[i]);
-	}
 	_n.key.resize(mid);
 	_n.ptr.resize(mid);
 
@@ -112,14 +112,18 @@ void Index::Tree::splitNode(Node _n){
 		// load the parent from disk
 		parent = readNodeFromDisk(_n.parent);
 	}
-	int loc = parent.findKeyLoc(_n.key[0]);
-	parent.key.insert(parent.key.begin() + loc, sibling.key[0]);
+	int loc = 0;
+	while(parent.ptr[loc] != _n.id) loc++;
 	parent.ptr.insert(parent.ptr.begin() + loc + 1, sibling.id);
-
+	if(_n.isLeaf)
+		parent.key.insert(parent.key.begin() + loc, sibling.key[0]);
+	else{
+		parent.key.insert(parent.key.begin() + loc, _n.key[mid - 1]);
+		_n.key.pop_back();
+	}
 	// save changes to disk
 	writeNodeToDisk(_n);
 	writeNodeToDisk(sibling);
-
 	// recursively go up - check the parent
 	splitNode(parent);
 }
@@ -154,23 +158,23 @@ Index::Tree::Tree(std::string _name, int _datawidth){
 	name = _name;
 	degree = (Buffer::BLOCKCAPACITY - 2*10) / (_datawidth + 10) - 1;
 	// 10: bytes per Node id
-	BM.NewPage();
-	BM.SetFilename("../test/" + name + ".index");
-	if(BM.IsExist()){
+	BM->NewPage();
+	BM->SetFilename("../test/" + name + ".index");
+	if(BM->IsExist()){
 		// load this index from disk
-		while(BM.Load()){
+		while(BM->Load()){
 			size++;
-			Node node = Node(BM.Read());
+			Node node = Node(BM->Read());
 			if(node.parent == -1) root = node.id;// find the root
-			BM.SetSize(0);
+			BM->SetSize(0);
 		}
 	}
 	else{
 		// create a new file for this index on disk
 		size = 1;
 		root = 0;
-		BM.Write(Node(0));// root of the B+ tree
-		BM.Save();
+		BM->Write(Node(0));// root of the B+ tree
+		BM->Save();
 	}
 }
 
@@ -179,9 +183,9 @@ Index::Tree::Tree(){
 }
 
 void Index::Tree::destroy(){
-	BM.NewPage();
-	BM.SetFilename("../test/" + name + ".index");
-	BM.Delete();
+	BM->NewPage();
+	BM->SetFilename("../test/" + name + ".index");
+	BM->Delete();
 }
 
 void Index::IndexManager::setWorkspace(std::string _table, std::string _attribute){
@@ -207,10 +211,16 @@ void Index::IndexManager::insert(std::string _key, int _value){
 	trees[workspace].insert(_key, _value);
 }
 
+void Index::IndexManager::linkBufferManager(Buffer::BufferManager * _BM){
+	Tree::BM = _BM;
+}
+
 void Index::IndexManager::sample(){
 	Index::IndexManager IM;
+	Buffer::BufferManager BM;
+	IM.linkBufferManager(&BM);
 	IM.setWorkspace("student", "sname");
-	IM.createIndex(100);
+	IM.createIndex(800);
 	while(1)
 		try{
 			std::string cmd, key;

@@ -25,10 +25,12 @@ namespace Index{
 		Node readNodeFromDisk(int loc);
 		void writeNodeToDisk(Node _n);
 		void splitNode(Node _n);
-		static Buffer::BufferManager BM;
+		int leftSibling(Node _n);
 	public:
+		static Buffer::BufferManager *BM;
 		int find(std::string _key);
 		void insert(std::string _key, int _value);
+		void remove(std::string _key);
 		void destroy();
 		Tree(std::string _name, int _datawidth);
 		Tree();
@@ -52,6 +54,8 @@ namespace Index{
 		// 插入一个<key, value>对
 		// key必须以string给出，如果是int/double需要转成string
 		// value即指向某个tuple的"指针"，形式由API层给出，index manager只负责存储这一信息
+		void linkBufferManager(Buffer::BufferManager* _BM);
+		// 绑定BufferManager——在读写硬盘前未绑定会引发RE！
 		static void sample();
 	};
 }
