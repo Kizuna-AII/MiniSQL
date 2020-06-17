@@ -55,5 +55,7 @@ namespace API {
 		void DropIndex(std::string target, std::string from = "");
 		//处理Drop Table，传入要删除的table名，执行操作
 		void DropTable(std::string target);
+		//输出ScreenBuffer中的内容
+		void OutPutResult(std::string tableName, std::ostream & fout);
 	};
 }

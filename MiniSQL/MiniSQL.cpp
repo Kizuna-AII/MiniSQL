@@ -57,6 +57,7 @@ public:
 								string tName;
 								inter->GetString(fin, tName);
 								vector<Common::Attribute> attributes = inter->GetAttributes(fin);
+								inter->PeekEnd(fin);
 								api->CreateTable(tName, attributes);
 								break;
 							}
@@ -81,6 +82,7 @@ public:
 								break;
 							}
 						}
+						break;
 					}
 					case 4: {//drop
 						switch (Parse_once(fin)) {
@@ -111,6 +113,7 @@ public:
 								break;
 							}
 						}
+						break;
 					}
 					case 5: {//select
 						string temp,tableName;
@@ -129,6 +132,7 @@ public:
 						else {
 							api->Select(tableName, NULL);//无条件选择
 						}
+						api->OutPutResult(tableName, fout);
 						break;
 					}
 					case 6: {//insert

@@ -163,7 +163,7 @@ std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin)
 			if (tmp == "key") {
 				GetString(fin, tmp);//获取主键值
 				for (int i = 0; i < res.size(); i++) {//暴力查找
-					if (res[i].name == "tmp") {
+					if (res[i].name == tmp) {
 						res[i].primary = 1;
 						break;
 					}
@@ -191,14 +191,16 @@ std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin)
 			}
 			else throw(API::wrong_command_error("属性读取错误"));
 			GetString(fin, tmp);
-			if (tmp == ",")fin.putback(',');//检查是否有unique约束
-			else if (tmp == "unique") {
+			if (tmp == "unique") {
 				attri.unique = 1;
 			}
 			res.push_back(attri);
 		}
 		GetString(fin, tmp);
-		if (tmp[0] != ',')flag = 1;//如果没有逗号，认为语句结束
+		if (fin.peek() != ',')flag = 1;//如果没有逗号，认为语句结束
+		else {
+			PeekEnd(fin);
+		}
 	} while (!flag);
 	return res;
 }
