@@ -3,10 +3,7 @@
 #include<cstring>
 using namespace std;
 using namespace Common;
-namespace API {
-	std::vector<std::string> screenBuffer; //准备输出到屏幕的Buffer。例如，当RecordManager完成查询操作时，把要输出的内容都丢到这里。
-	std::vector<std::string> inputBuffer; //准备从丢给其他模块的Buffer。例如Insert时，把要insert的tuple都塞进去。
-}
+
 namespace Record{
 
     //选择指定行
@@ -40,7 +37,8 @@ namespace Record{
             bool flag=1; //判断是否满足条件
             //对于每个条件，O(sizeof(attri))暴力查找其对应的列
             //由于题目限定条件数不会很多，该暴力不会很劣
-            for(int i=0;i<(int)condition->size();i++){
+			int conSize = (condition != NULL) ? (int)condition->size() : 0;
+            for(int i=0;i< conSize;i++){
                 for(int j=0;j< attri_num ;j++){
                     if(tableName->attributes[j].name==(*condition)[i].attri){
                         if(tableName->attributes[j].type==-1){//float
