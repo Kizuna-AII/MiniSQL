@@ -3,12 +3,32 @@
 Buffer::BufferManager *Index::Tree::BM = NULL;
 
 int Index::Node::findKeyLoc(std::string _key){
-	// possible optimization: binary search
+	// find the first key that strictly > _key
+	// if no such key exists, return key.size()
+	int l = 0, r = key.size();
+	while(l != r){
+		int mid = (l + r) / 2;
+		if(key[mid] > _key) r = mid;
+		else l = mid + 1;
+	}
+	return l;
+	// unoptimized version, O(n)
+	/*
 	int loc = 0;
 	while(loc < key.size() && _key >= key[loc]){
 		loc++;
 	}
+	if(l != loc){
+		std::cout << l << " " << loc << "node" << id << std::endl;
+		throw((std::string)"Stop here!");
+	}
 	return loc;
+	*/
+}
+
+int Index::Node::rightSibling(){
+	if(!isLeaf || ptr.size() != key.size() + 1) return -1;
+	return ptr[ptr.size() - 1];
 }
 
 Index::Node::operator std::string(){
@@ -65,6 +85,7 @@ Index::Node::Node(int _id){
 }
 
 Index::Node Index::Tree::readNodeFromDisk(int loc){
+	if(loc == -1) return Node();
 	BM->NewPage();
 	BM->SetFilename("../test/" + name + ".index");
 	BM->SetFileOffset(loc * Buffer::BLOCKCAPACITY);
@@ -96,6 +117,7 @@ void Index::Tree::splitNode(Node _n){
 		sibling.ptr.push_back(_n.ptr[i]);
 	_n.key.resize(mid);
 	_n.ptr.resize(mid);
+	if(_n.isLeaf) _n.ptr.push_back(sibling.id);
 
 	// update the parent's information
 	Node parent;
@@ -115,8 +137,9 @@ void Index::Tree::splitNode(Node _n){
 	int loc = 0;
 	while(parent.ptr[loc] != _n.id) loc++;
 	parent.ptr.insert(parent.ptr.begin() + loc + 1, sibling.id);
-	if(_n.isLeaf)
+	if(_n.isLeaf){
 		parent.key.insert(parent.key.begin() + loc, sibling.key[0]);
+	}
 	else{
 		parent.key.insert(parent.key.begin() + loc, _n.key[mid - 1]);
 		_n.key.pop_back();
@@ -128,18 +151,62 @@ void Index::Tree::splitNode(Node _n){
 	splitNode(parent);
 }
 
+void Index::Tree::mergeNode(Node _a, Node _b){
+	// merge node _b to _a
+	/*
+	if(_a.isLeaf) _a.ptr.pop_back();
+	for(auto k: _b.key)
+		_a.key.push_back(k);
+	for(auto p: _b.ptr)
+		_a.ptr.push_back(p);
+	writeNodeToDisk(_a);
+	*/
+}
+
+void Index::Tree::updateAncIndex(Node _n, std::string _old, std::string _new){
+	Node anc = readNodeFromDisk(_n.parent);
+	while(anc.id != -1){
+		int loc = anc.findKeyLoc(_old) - 1;
+		if(loc >= 0 && anc.key[loc] == _old)
+			anc.key[loc] = _new;
+		writeNodeToDisk(anc);
+		anc = readNodeFromDisk(anc.parent);
+	}
+}
+
+void Index::Tree::rebuild(){
+	std::vector<std::string> keys;
+	std::vector<int> ptrs;
+	Node node = readNodeFromDisk(root);
+	while(!node.isLeaf)
+		node = readNodeFromDisk(node.ptr[0]);
+	while(node.id != -1){
+		for(int i = 0; i < node.key.size(); i++){
+			keys.push_back(node.key[i]);
+			ptrs.push_back(node.ptr[i]);
+		}
+		node = readNodeFromDisk(node.rightSibling());
+	}
+	destroy();
+	size = 1;
+	root = 0;
+	BM->Write(Node(0));// NEW root of the B+ tree
+	BM->Save();
+	for(int i = 0; i < keys.size(); i++){
+		insert(keys[i], ptrs[i]);
+	}
+}
+
 int Index::Tree::find(std::string _key){
 	Node node = readNodeFromDisk(root);
 	while(!node.isLeaf){// until this is a leaf node, do:
 		int childNo = node.findKeyLoc(_key);
 		node = readNodeFromDisk(node.ptr[childNo]);
 	}
-	int cnt = 0;
-	for(auto s: node.key){
-		if(s == _key) return node.ptr[cnt];
-		cnt++;
-	}
-	throw("Key " + _key + " doesn't exist");
+	int loc = node.findKeyLoc(_key);
+	loc--;
+	if(loc < 0 || node.key[loc] != _key) throw("Key " + _key + " doesn't exist");
+	return node.ptr[loc];
 }
 
 void Index::Tree::insert(std::string _key, int _value){
@@ -154,12 +221,49 @@ void Index::Tree::insert(std::string _key, int _value){
 	splitNode(node);
 }
 
+void Index::Tree::remove(std::string _key){
+	Node node = readNodeFromDisk(root);
+	while(!node.isLeaf){// until this is a leaf node, do:
+		int childNo = node.findKeyLoc(_key);
+		node = readNodeFromDisk(node.ptr[childNo]);
+	}
+	int loc = node.findKeyLoc(_key) - 1;
+	if(loc < 0 || node.key[loc] != _key) throw("Key " + _key + " doesn't exist");
+	// delete the key and corresponding ptr
+	node.key.erase(node.key.begin() + loc);
+	node.ptr.erase(node.ptr.begin() + loc);
+	// I: no need to change
+	if(node.key.size() >= degree / 2 || node.parent == -1){
+		writeNodeToDisk(node);
+		return;
+	}
+	// II: borrow a key from the right sibling
+	Node sibling = readNodeFromDisk(node.rightSibling());
+	if(sibling.id != -1 && sibling.key.size() > degree / 2){
+		// if the right sibling exists and has enough keys
+		node.key.push_back(sibling.key[0]);
+		node.ptr.insert(node.ptr.end() - 1, sibling.ptr[0]);
+		sibling.key.erase(sibling.key.begin());
+		sibling.ptr.erase(sibling.ptr.begin());
+		writeNodeToDisk(node);
+		writeNodeToDisk(sibling);
+		if(loc == 0) updateAncIndex(node, _key, node.key[0]);
+		updateAncIndex(sibling, node.key[node.key.size() - 1], sibling.key[0]);
+		return;
+	}
+	// III: no enough keys in the right sibling / no right sibling
+	writeNodeToDisk(node);
+	rebuild();
+	// mergeNode(node, sibling);
+}
+
 Index::Tree::Tree(std::string _name, int _datawidth){
 	name = _name;
 	degree = (Buffer::BLOCKCAPACITY - 2*10) / (_datawidth + 10) - 1;
 	// 10: bytes per Node id
 	BM->NewPage();
 	BM->SetFilename("../test/" + name + ".index");
+	size = 0;
 	if(BM->IsExist()){
 		// load this index from disk
 		while(BM->Load()){
@@ -171,7 +275,7 @@ Index::Tree::Tree(std::string _name, int _datawidth){
 	}
 	else{
 		// create a new file for this index on disk
-		size = 1;
+		size++;
 		root = 0;
 		BM->Write(Node(0));// root of the B+ tree
 		BM->Save();
@@ -211,6 +315,10 @@ void Index::IndexManager::insert(std::string _key, int _value){
 	trees[workspace].insert(_key, _value);
 }
 
+void Index::IndexManager::remove(std::string _key){
+	trees[workspace].remove(_key);
+}
+
 void Index::IndexManager::linkBufferManager(Buffer::BufferManager * _BM){
 	Tree::BM = _BM;
 }
@@ -229,6 +337,9 @@ void Index::IndexManager::sample(){
 				int value;
 				std::cin >> value;
 				IM.insert(key, value);
+			}
+			else if(cmd == "del"){
+				IM.remove(key);
 			}
 			else{
 				std::cout << IM.find(key) << std::endl;
