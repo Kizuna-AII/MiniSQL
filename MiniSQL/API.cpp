@@ -7,8 +7,10 @@ namespace API {
 
 Common::Table * API::Api::GetTableByName(std::string & tableName)
 {
-	throw(not_completed_exception());
-	return nullptr;
+	Common::Table* newTable = catalogm.GetTable(tableName);
+	if (newTable == nullptr)
+		throw(table_notfind_error(tableName));
+	return newTable;
 }
 
 void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>& attributes)
@@ -21,8 +23,15 @@ void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>
 		cout << attributes[i].name << " type: " << attributes[i].type <<"  primary:"<<attributes[i].primary<<"  uni:"<<attributes[i].unique;
 		cout << endl;
 	}
-	//
-	throw(not_completed_exception());
+
+	Common::Table* newTable = new Common::Table();
+	newTable->name = tableName;
+	newTable->attributes = attributes;
+	size_t newhandle = catalogm.CreateTable(newTable);
+	delete newTable;
+	if (newhandle == 0)
+		throw(table_exist_error(tableName));
+	return;
 }
 
 void API::Api::CreateIndex(std::string indexName, std::string on, std::string attri)
@@ -33,6 +42,15 @@ void API::Api::CreateIndex(std::string indexName, std::string on, std::string at
 	cout << "table:" << on << endl;
 	cout << "attri:" << attri <<endl;
 	//DEBUG
+	int result = catalogm.CreateIndex(on, attri, indexName);
+	if (result == 0)
+		throw(table_notfind_error(on));
+	if (result == -1)
+		throw(column_notfind_error(attri));
+	if (result == -2)
+		throw(index_exist_error(indexName));
+	// catalog manager create index success
+
 	throw(not_completed_exception());
 }
 
@@ -85,6 +103,11 @@ void API::Api::DropIndex(std::string target, std::string from)
 	cout << "DEBUG info dropindex:" << endl;
 	cout << "index:" << target << "	" << "from:" << from << endl;
 	//
+	std::string indexName = catalogm.DeleteIndex(from, target);
+	if (indexName == Catalog::noIndex)
+		throw(index_notfind_error(target));
+	// catalog manager delete index success
+
 	throw(not_completed_exception());
 }
 
@@ -94,6 +117,13 @@ void API::Api::DropTable(std::string target)
 	cout << "DEBUG info DropTable:" << endl;
 	cout << "target:"<<target << endl;
 	//
+
+	bool deleteTable = catalogm.DeleteTable(target);
+	if (deleteTable == false)
+		throw(table_notfind_error(target));
+
+	// index manager delete index
+
 	throw(not_completed_exception());
 }
 

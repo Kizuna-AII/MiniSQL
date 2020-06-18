@@ -17,7 +17,7 @@ namespace Catalog
 	private:
 		Buffer::BufferManager* BMP;
 		size_t tableHandle;
-		// 获得handle对应handle，必须先findtable
+		// 获得handle对应table，必须先findtable
 		Common::Table* GetTable(size_t handle);
 		// 修改table信息，不能修改名字
 		void ChangeTable(size_t handle, Common::Table* table);
@@ -36,11 +36,11 @@ namespace Catalog
 		// 传入table的名字，返回值为Table*，如果不存在返回nullptr
 		Common::Table* GetTable(std::string tableName);
 		// 创建索引,返回类型 1:success 0:找不到对应的表 -1:找不到对应的列 -2:已经存在索引 
-		int CreateIndex(std::string tableName, std::string columnName, std::string indexName);
-		// 删除索引,返回类型 True:success False:找不到对应的索引
-		bool DeleteIndex(std::string tableName, std::string indexName);
+		// 索引名若为 noIndex = "#NULL#" 会被自动替换成 "TableName#ColumnName"
+		int CreateIndex(std::string tableName, std::string columnName, std::string indexName = noIndex);
+		// 删除索引,返回类型 Table_name#Column_name:success noIndex:找不到对应的索引
+		std::string DeleteIndex(std::string tableName, std::string indexName);
 		// 查找索引，传入索引名和表名，返回索引是否存在，0-不存在，1-attributes.size()-对应列数
 		int FindIndex(std::string tableName, std::string indexName);
-
 	};
 }

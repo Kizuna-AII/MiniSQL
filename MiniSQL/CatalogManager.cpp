@@ -30,17 +30,20 @@ void Catalog::CatalogManager::Initialization(Buffer::BufferManager * target)
 {
 	this->BMP = target;
 	this->tableHandle = BMP->NewPage();
+	if (this->tableHandle == 0)
+		this->tableHandle = BMP->NewPage();
 	BMP->Write("0", tableHandle);
 	return;
 }
 
 size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 {
-	Common::Table* temp;
 	if (FindTable(tableName->name) != 0) return 0;
 	else
 	{
 		size_t handle = BMP->NewPage();
+		if (handle == 0)
+			handle = BMP->NewPage();
 		std::string str = TableToStr(tableName);
 		BMP->Write(str, handle);
 		std::string tables = BMP->GetBuffer(tableHandle);
@@ -130,6 +133,7 @@ int Catalog::CatalogManager::CreateIndex(std::string tableName, std::string colu
 	if (index != 0) return -2;
 	Common::Table* table = GetTable(handle);
 	int i;
+	if (indexName == noIndex) indexName = tableName + "#" + columnName;
 	for (i = 0; i <= table->attributes.size() - 1; i++)
 	{
 		if (table->attributes[i].name == columnName)
@@ -148,16 +152,16 @@ int Catalog::CatalogManager::CreateIndex(std::string tableName, std::string colu
 	return 0;
 }
 
-bool Catalog::CatalogManager::DeleteIndex(std::string tableName, std::string indexName)
+std::string Catalog::CatalogManager::DeleteIndex(std::string tableName, std::string indexName)
 {
 	int index = FindIndex(tableName, indexName);
-	if (index == 0) return false;
+	if (index == 0) return noIndex;
 	size_t handle = FindTable(tableName);
 	Common::Table* table = GetTable(handle);
 	table->attributes[index - 1].indexName = noIndex;
 	ChangeTable(handle, table);
 	delete table;
-	return true;
+	return tableName + "#" + table->attributes[index - 1].name;
 }
 
 int Catalog::CatalogManager::FindIndex(std::string tableName, std::string indexName)

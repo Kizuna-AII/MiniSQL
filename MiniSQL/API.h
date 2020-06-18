@@ -30,12 +30,44 @@ namespace API {
 		wrong_command_error(const char* _msg) { this->msg = _msg; }
 		virtual char const* what() const { return "wrong command"; }
 	};
-	
+
+	// Exception in Catalog Manager
+	// TABLE_EXIST_ERROR : Create Table
+	class table_exist_error : mexception {
+	public:
+		table_exist_error(const std::string _msg) { this->msg = _msg; } 
+		virtual char const* what() const { return ("Table "+this->msg+" already exist!").c_str(); }
+	};
+	// TABLE_NOTFIND_ERROR : Delete Table & Create Index & Find Table
+	class table_notfind_error : mexception {
+	public:
+		table_notfind_error(const std::string _msg) { this->msg = _msg; }
+		virtual char const* what() const { return ("Table " + this->msg + " don't exist!").c_str();}
+	};
+	// COLUMN_NOTFIND_ERROR : Create Index
+	class column_notfind_error : mexception {
+	public:
+		column_notfind_error(const std::string _msg) { this->msg = _msg; }
+		virtual char const* what() const { return ("Column " + this->msg + " don't exist!").c_str(); }
+	};
+	// INDEX_EXIST_ERROR : Create Index
+	class index_exist_error : mexception {
+	public:
+		index_exist_error(const std::string _msg) { this->msg = _msg; }
+		virtual char const* what() const { return ("Index " + this->msg + " already exists").c_str(); }
+	};
+	// INDEX_NOTFIND_ERROR : Delete Index
+	class index_notfind_error : mexception {
+	public:
+		index_notfind_error(const std::string _msg) { this->msg = _msg; }
+		virtual char const* what() const { return ("Index " + this->msg + " don't exist!").c_str(); }
+	};
+
 	//
 	class Api {
 	private:
 		Buffer::BufferManager bufferm;
-		Catalog::CatalogManager catalogm;
+		Catalog::CatalogManager catalogm; // 第一次试用前必须调用Initialization(BufferManager*)
 		Record::RecordManager recordm;
 		//index
 
