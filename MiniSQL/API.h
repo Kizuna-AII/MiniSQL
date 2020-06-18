@@ -6,6 +6,7 @@
 #include "BufferManager.h"
 #include "CatalogManager.h"
 #include "RecordM.h"
+#include "IndexManager.h"
 
 namespace API {
 	//Exceptions
@@ -69,7 +70,7 @@ namespace API {
 		Buffer::BufferManager bufferm;
 		Catalog::CatalogManager catalogm; // 第一次试用前必须调用Initialization(BufferManager*)
 		Record::RecordManager recordm;
-		//index
+		Index::IndexManager indexm;
 
 	public:
 		Common::Table* GetTableByName(std::string& tableName);

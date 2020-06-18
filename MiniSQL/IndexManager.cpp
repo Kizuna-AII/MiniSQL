@@ -292,6 +292,10 @@ void Index::Tree::destroy(){
 	BM->Delete();
 }
 
+void Index::IndexManager::setWorkspace(std::string _table_attr){
+	workspace = _table_attr;
+}
+
 void Index::IndexManager::setWorkspace(std::string _table, std::string _attribute){
 	workspace = _table + "#" + _attribute;
 }

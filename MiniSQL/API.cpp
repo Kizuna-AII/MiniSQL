@@ -50,8 +50,9 @@ void API::Api::CreateIndex(std::string indexName, std::string on, std::string at
 	if (result == -2)
 		throw(index_exist_error(indexName));
 	// catalog manager create index success
-
-	throw(not_completed_exception());
+	indexm.setWorkspace(on, attri);
+	indexm.createIndex();
+	// throw(not_completed_exception());
 }
 
 void API::Api::Select(std::string from, std::vector<Common::Compares>* conditions)
@@ -107,8 +108,9 @@ void API::Api::DropIndex(std::string target, std::string from)
 	if (indexName == Catalog::noIndex)
 		throw(index_notfind_error(target));
 	// catalog manager delete index success
-
-	throw(not_completed_exception());
+	indexm.setWorkspace(indexName);
+	indexm.dropIndex();
+	// throw(not_completed_exception());
 }
 
 void API::Api::DropTable(std::string target)
