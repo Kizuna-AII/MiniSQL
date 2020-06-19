@@ -33,6 +33,7 @@ void Catalog::CatalogManager::Initialization(Buffer::BufferManager * target)
 	if (this->tableHandle == 0)
 		this->tableHandle = BMP->NewPage();
 	BMP->Write("0", tableHandle);
+	BMP->SetPin(tableHandle);
 	return;
 }
 
@@ -44,6 +45,7 @@ size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 		size_t handle = BMP->NewPage();
 		if (handle == 0)
 			handle = BMP->NewPage();
+		BMP->SetPin(handle);
 		std::string str = TableToStr(tableName);
 		BMP->Write(str, handle);
 		std::string tables = BMP->GetBuffer(tableHandle);
@@ -160,8 +162,9 @@ std::string Catalog::CatalogManager::DeleteIndex(std::string tableName, std::str
 	Common::Table* table = GetTable(handle);
 	table->attributes[index - 1].indexName = noIndex;
 	ChangeTable(handle, table);
+	std::string res = tableName + "#" + table->attributes[index - 1].name;
 	delete table;
-	return tableName + "#" + table->attributes[index - 1].name;
+	return res;
 }
 
 int Catalog::CatalogManager::FindIndex(std::string tableName, std::string indexName)
