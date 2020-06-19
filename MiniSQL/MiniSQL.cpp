@@ -190,6 +190,7 @@ public:
 		return;
 	}
 };
+/*
 int main() {
 	/// initialize I/O
 	//freopen("in.txt", "r", stdin);
@@ -201,6 +202,7 @@ int main() {
 	//
 	return 0;
 }
+*/
 
 /*
 // sample program for BufferManager

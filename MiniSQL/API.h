@@ -68,7 +68,7 @@ namespace API {
 	class Api {
 	private:
 		Buffer::BufferManager bufferm;
-		Catalog::CatalogManager catalogm; // 第一次试用前必须调用Initialization(BufferManager*)
+		Catalog::CatalogManager catalogm; // 第一次使用前必须调用Initialization(BufferManager*)
 		Record::RecordManager recordm;
 		Index::IndexManager indexm;
 
