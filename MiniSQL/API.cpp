@@ -5,6 +5,18 @@ namespace API {
 	std::vector<std::string> inputBuffer; //准备从丢给其他模块的Buffer。例如Insert时，把要insert的tuple都塞进去。
 }
 
+API::Api::Api()
+{
+	bufferm = Buffer::BufferManager();
+	catalogm = Catalog::CatalogManager();
+	catalogm.Initialization(&bufferm);
+	recordm = Record::RecordManager();
+	recordm.LinkBufferManager(&bufferm);
+	indexm = Index::IndexManager();
+	indexm.linkBufferManager(&bufferm);
+	return;
+}
+
 Common::Table * API::Api::GetTableByName(std::string & tableName)
 {
 	Common::Table* newTable = catalogm.GetTable(tableName);

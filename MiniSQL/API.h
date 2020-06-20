@@ -73,6 +73,9 @@ namespace API {
 		Index::IndexManager indexm;
 
 	public:
+		//构造函数
+		Api();
+		//获取Table信息
 		Common::Table* GetTableByName(std::string& tableName);
 		//处理Create Table语句
 		void CreateTable(std::string tableName, std::vector<Common::Attribute>&attributes);
