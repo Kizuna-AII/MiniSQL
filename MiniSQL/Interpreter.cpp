@@ -15,6 +15,7 @@ void Interpreter::GetString(std::istream &fin, std::string &str) {
 	char ch;
 	bool flag = 0;//遇到空格结束
 	while (fin.get(ch)) {
+		if (ch == '\n' || ch == '\r')continue;
 		if (ch == '(' || ch == ')') {
 			ch = ' ';//括号视为空格
 		}
