@@ -140,6 +140,16 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 		if (bufferm.GetSize(handle) < Buffer::BLOCKCAPACITY) {//如果该块有空余
 			recordm.Insert(table, handle);//调用recorm执行插入操作，同时更新index
 			bufferm.Save(handle);//保存
+
+			// index manager 向所有是index的列对应的B+树插入 <key, offset> 对
+			int tupleOffset = 0;
+			for(auto col: table->attributes){
+				if(col.indexName!="#NULL#"){
+					indexm.setWorkspace(into, col.name);	
+					indexm.insert(tuple.Get(col, tupleOffset), offset);
+				}
+			}
+
 		}
 		//
 		offset += Buffer::BLOCKCAPACITY;
@@ -193,7 +203,6 @@ void API::Api::DropIndex(std::string target, std::string from)
 	// catalog manager delete index success
 	indexm.setWorkspace(indexName);
 	indexm.dropIndex();
-	// throw(not_completed_exception());
 }
 
 void API::Api::DropTable(std::string target)
@@ -201,15 +210,19 @@ void API::Api::DropTable(std::string target)
 	//DEBUG
 	cout << "DEBUG info DropTable:" << endl;
 	cout << "target:"<<target << endl;
-	//
 
+	// index manager 对所有是index的列删除对应的B+树
+	Common::Table* table = GetTableByName(target);//获取table
+	for(auto col: table->attributes){
+		if(col.indexName!="#NULL#"){
+			indexm.setWorkspace(target, col.name);	
+			indexm.dropIndex();
+		}
+	}
+	// catalog manager delete index
 	bool deleteTable = catalogm.DeleteTable(target);
 	if (deleteTable == false)
 		throw(table_notfind_error(target));
-
-	// index manager delete index
-
-	throw(not_completed_exception());
 }
 
 void API::Api::OutPutResult(std::string tableName,std::ostream & fout)
