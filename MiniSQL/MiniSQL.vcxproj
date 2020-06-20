@@ -158,7 +158,6 @@
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="MiniSQL.cpp" />
     <ClCompile Include="RecordM.cpp" />
-    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="API.h" />

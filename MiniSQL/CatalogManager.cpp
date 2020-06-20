@@ -74,16 +74,18 @@ size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 
 bool Catalog::CatalogManager::DeleteTable(std::string tableName)
 {
-	size_t tableHandle = FindTable(tableName);
-	if (FindTable(tableName) == 0) return false;
+	size_t handle = FindTable(tableName);
+	if (handle == 0) return false;
 	else
 	{
+		BMP->SetSize(0, handle);
+		BMP->ResetPin(handle);
 		std::string tables = BMP->GetBuffer(tableHandle);
 		std::istringstream tableStreamIn(tables);
 		std::ostringstream tableStreamOut("");
 		int count;
 		tableStreamIn >> count;
-		tableStreamOut << count - 1 << " ";
+		tableStreamOut << count - 1;
 		if (count != 1)
 		{
 			for (int i = 0; i <= count - 1; i++)
@@ -92,7 +94,7 @@ bool Catalog::CatalogManager::DeleteTable(std::string tableName)
 				size_t temphandle;
 				tableStreamIn >> tempname >> temphandle;
 				if (tempname != tableName)
-					tableStreamOut << tempname << " " << temphandle << " ";
+					tableStreamOut << " " << tempname << " " << temphandle;
 			}
 		}
 		std::string returnStr = tableStreamOut.str();
@@ -162,9 +164,9 @@ std::string Catalog::CatalogManager::DeleteIndex(std::string tableName, std::str
 	Common::Table* table = GetTable(handle);
 	table->attributes[index - 1].indexName = noIndex;
 	ChangeTable(handle, table);
-	std::string res = tableName + "#" + table->attributes[index - 1].name;
+	std::string returnStr = tableName + "#" + table->attributes[index - 1].name;
 	delete table;
-	return res;
+	return returnStr;
 }
 
 int Catalog::CatalogManager::FindIndex(std::string tableName, std::string indexName)
@@ -178,6 +180,12 @@ int Catalog::CatalogManager::FindIndex(std::string tableName, std::string indexN
 	}
 	delete table;
 	return false;
+}
+
+void Catalog::CatalogManager::ShowTables()
+{
+	std::cout << BMP->GetBuffer(tableHandle) << std::endl;
+	return;
 }
 
 std::string Catalog::TableToStr(Common::Table * table)

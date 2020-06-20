@@ -42,5 +42,7 @@ namespace Catalog
 		std::string DeleteIndex(std::string tableName, std::string indexName);
 		// 查找索引，传入索引名和表名，返回索引是否存在，0-不存在，1-attributes.size()-对应列数
 		int FindIndex(std::string tableName, std::string indexName);
+		// 用于debug
+		void ShowTables();
 	};
 }
