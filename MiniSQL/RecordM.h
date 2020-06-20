@@ -3,11 +3,13 @@
 #include<vector>
 #include "Structure.h"
 #include "BufferManager.h"
+#include "IndexManager.h"
 const int max_attributes=50;
 namespace Record{
     class RecordManager{
     private:
 		Buffer::BufferManager* BMP;
+		Index::IndexManager* IDM;
 		std::vector<int>rec,attri_offset;
 		template<class T> bool cmp(T a,T b,int op) const;
         void rSelect(Common::Table* tableName,std::vector<Common::Compares>*condition, std::string& buffer,int maxSize,bool mode=0);
@@ -17,6 +19,10 @@ namespace Record{
 		//指定RecordManager使用的BufferManager
 		void LinkBufferManager(Buffer::BufferManager* target) {
 			BMP = target;
+			return;
+		}
+		void LinkIndex(Index::IndexManager* target) {
+			IDM = target;
 			return;
 		}
 		//传入table名,判断条件vector,要处理的块,将查询到的结果输出到common::ScreenBuffer

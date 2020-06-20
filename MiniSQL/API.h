@@ -7,7 +7,6 @@
 #include "CatalogManager.h"
 #include "RecordM.h"
 #include "IndexManager.h"
-
 namespace API {
 	//Exceptions
 	class mexception : std::exception {
@@ -77,6 +76,10 @@ namespace API {
 		Api();
 		//获取Table信息
 		Common::Table* GetTableByName(std::string& tableName);
+		//指定table和conditions，根据index查询结果，向offsets中填入需要查找的tuple的所在块的offset
+		//例如，在[0,4096)和[4096,8192)之间均有多个目标tuple，应在vector中填入0和4096
+		//如果conditions为NULL,则返回可以覆盖整个文件的offsets
+		void GetOffsets(std::vector<int>&offsets,Common::Table* table, std::vector<Common::Compares>*conditions);
 		//处理Create Table语句
 		void CreateTable(std::string tableName, std::vector<Common::Attribute>&attributes);
 		//指定index name,所在表格on，所在属性attri，执行Create Index操作

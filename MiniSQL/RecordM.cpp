@@ -69,7 +69,6 @@ namespace Record{
 		string key;
 		for (int j = 0; j < table->attributes.size(); j++) {
 			if (table->attributes[j].indexName != "#NULL#") {//index非空时更新
-				//setworkspace(table->name,table->attributes[j].name)
 				if (table->attributes[j].type == -1) {//float
 					key=string(str,sizeof(float));
 				}
@@ -79,7 +78,8 @@ namespace Record{
 				else {//char
 					key = string(str, (size_t)table->attributes[j].type);
 				}
-				//addindex(key,value)
+				IDM->setWorkspace(table->name, table->attributes[j].name);
+				IDM->insert(key, value);
 			}
 		}
 		return;
@@ -98,7 +98,8 @@ namespace Record{
 				else {//char
 					key = string(str, (size_t)table->attributes[j].type);
 				}
-				//removeindex(key)
+				IDM->setWorkspace(table->name, table->attributes[j].name);
+				IDM->remove(key);
 			}
 		}
 		return;
@@ -135,6 +136,7 @@ namespace Record{
 			AddIndex(table, buffer.c_str() + rec[i],rec[i]);
 			nowpos -= tupleLen;
         }
+		BMP->SetSize(nowpos + tupleLen, handle);//更新buffer的size
         return;
     }
 	//传入table名，从common::ScreenBuffer的InputBuffer中读取要插入的tuple，写入指定的block中。
@@ -143,10 +145,10 @@ namespace Record{
 		
 		vector<string>& ibuffer = API::inputBuffer;//引用inputbuffer
 		int space;
-		
+		//int tupleLen = table->GetDataSize();
 		for (int i = ibuffer.size()-1; i >= 0; ) {
-			space = BMP->GetSize(handle);
-			if ((int)ibuffer[i].size() > space)break;///////
+			space = Buffer::BLOCKCAPACITY - BMP->GetSize(handle);
+			if ((int)ibuffer[i].size() > space)break;
 			BMP->Write(ibuffer[i], handle);
 			AddIndex(table, ibuffer[i].c_str(),BMP->GetSize(handle));
 			ibuffer.pop_back();

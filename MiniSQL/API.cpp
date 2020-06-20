@@ -10,10 +10,11 @@ API::Api::Api()
 	bufferm = Buffer::BufferManager();
 	catalogm = Catalog::CatalogManager();
 	catalogm.Initialization(&bufferm);
-	recordm = Record::RecordManager();
-	recordm.LinkBufferManager(&bufferm);
 	indexm = Index::IndexManager();
 	indexm.linkBufferManager(&bufferm);
+	recordm = Record::RecordManager();
+	recordm.LinkBufferManager(&bufferm);
+	recordm.LinkIndex(&indexm);
 	return;
 }
 
@@ -25,6 +26,21 @@ Common::Table * API::Api::GetTableByName(std::string & tableName)
 	return newTable;
 }
 
+//void API::Api::AddIndex(Common::Table * table, int order, std::string key, int value)
+//{
+//	throw(not_completed_exception());
+//}
+//
+//void API::Api::DelIndex(Common::Table * table, int order, std::string key)
+//{
+//	throw(not_completed_exception());
+//}
+
+void API::Api::GetOffsets(std::vector<int>&offsets,Common::Table * table, std::vector<Common::Compares>* conditions)
+{
+	//请查看Select的代码行为
+	throw(not_completed_exception());
+}
 void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>& attributes)
 {
 	//Debug
@@ -73,17 +89,32 @@ void API::Api::Select(std::string from, std::vector<Common::Compares>* condition
 	cout << "DEBUG info Select:" << endl;
 	cout << "from :" << from << endl;
 	cout << "conditions:" <<endl;
-	for (int i = 0; i < conditions->size(); i++) {
-		cout << (*conditions)[i].attri << "	" << (int)(*conditions)[i].ctype << "	" << (*conditions)[i].value << endl;
+	if (conditions != NULL) {
+		for (int i = 0; i < conditions->size(); i++) {
+			cout << (*conditions)[i].attri << "	" << (int)(*conditions)[i].ctype << "	" << (*conditions)[i].value << endl;
+		}
 	}
 	//
 	//找到对应的表
 	Common::Table* table = GetTableByName(from);
-	//用index找出所有要查询的块
-	//对于每个块，使用recordm->Select(表的指针，条件vector的指针，buffer handle);
+	std::vector<int>offsets;
+	offsets.clear();
+	GetOffsets(offsets, table, conditions);//获取需要读取的块位置
+	string fileName = from + "_rec"; //文件命名为 table_rec
+	int handle = bufferm.NewPage();
+	bufferm.SetFilename(fileName, handle);
+	bufferm.SetPin(handle);
+	for (int i = 0; i < offsets.size(); i++) {//依次处理每个offset
+		long long tmp = offsets[i];
+		bufferm.SetFileOffset(tmp, handle);
+		bufferm.Load(handle);//读取指定的块
+		recordm.Select(table, conditions, handle);
+		//对每个块使用recordm->Select()查找tuple;
+	}
+	bufferm.ResetPin(handle);
 	//recordm的输出在API::screenBuffer中，以二进制数据形式存储
 	//之后会在主程序调用OutPutResult()显示结果
-	throw(not_completed_exception());
+	return;
 }
 
 void API::Api::Insert(Common::Tuple & tuple, std::string into)
@@ -94,7 +125,28 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 	cout << "values:" << endl;
 	cout << tuple.GetString() << endl;
 	//
-	throw(not_completed_exception());
+	Common::Table* table = GetTableByName(into);//获取table
+	API::inputBuffer.push_back(tuple.GetString());
+	string fileName = into + "_rec"; //文件命名为 table_rec
+	int handle = bufferm.NewPage();
+	bufferm.SetFilename(fileName, handle);
+	
+	long long offset = 0;
+	bufferm.SetPin(handle);
+	do {
+		bufferm.SetFileOffset(offset, handle);
+		bufferm.Load(handle);//读取文件
+		//
+		if (bufferm.GetSize(handle) < Buffer::BLOCKCAPACITY) {//如果该块有空余
+			recordm.Insert(table, handle);//调用recorm执行插入操作，同时更新index
+			bufferm.Save(handle);//保存
+		}
+		//
+		offset += Buffer::BLOCKCAPACITY;
+	} while (!inputBuffer.empty());
+	bufferm.ResetPin(handle);
+	//throw(not_completed_exception());
+	return;
 }
 
 void API::Api::Delete(std::string from, std::vector<Common::Compares>* conditions)
@@ -107,7 +159,26 @@ void API::Api::Delete(std::string from, std::vector<Common::Compares>* condition
 		cout << (*conditions)[i].attri << "	" << (int)(*conditions)[i].ctype << "	" << (*conditions)[i].value << endl;
 	}
 	//
-	throw(not_completed_exception());
+	Common::Table* table = GetTableByName(from);//获取表头
+	std::vector<int>offsets;
+	offsets.clear();
+	GetOffsets(offsets, table, conditions);//获取需要读取的块位置
+	string fileName = from + "_rec"; //文件命名为 table_rec
+	int handle = bufferm.NewPage();
+	bufferm.SetFilename(fileName, handle);
+	bufferm.SetPin(handle);
+	for (int i = 0; i < offsets.size(); i++) {//依次处理每个offset
+		long long tmp = offsets[i];
+		bufferm.SetFileOffset(tmp, handle);
+		bufferm.Load(handle);//读取指定的块
+		recordm.Delete(table, conditions, handle);
+		//对每个块使用recordm->Delete()处理tuple;
+		bufferm.Save(handle);//删除后保存
+	}
+	bufferm.ResetPin(handle);
+	//
+	//throw(not_completed_exception());
+	return;
 }
 
 void API::Api::DropIndex(std::string target, std::string from)
@@ -169,5 +240,6 @@ void API::Api::OutPutResult(std::string tableName,std::ostream & fout)
 		}
 		fout << endl;
 	}
-	throw(not_completed_exception());
+	//throw(not_completed_exception());
+	return;
 }
