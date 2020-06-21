@@ -252,11 +252,7 @@ DWORD Buffer::BufferManager::GetFileSize(const size_t & handle) const
 	::CloseHandle(fileHandle);
 	return res;
 }
-//#include <io.h>
 
-//#include <sys/types.h>
-//#include <sys/stat.h>
-//#include <stdio.h>
 void Buffer::BufferManager::SetFileSize(const DWORD & size, const size_t & handle)
 {
 	int fileHandle;
@@ -267,6 +263,6 @@ void Buffer::BufferManager::SetFileSize(const DWORD & size, const size_t & handl
 		::_close(fileHandle);
 		throw("Cannot Load File");
 	}
-	::_chsize(fileHandle, size);
+	::_chsize(fileHandle, (long)size);
 	::_close(fileHandle);
 }
