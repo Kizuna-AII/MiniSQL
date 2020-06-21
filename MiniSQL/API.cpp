@@ -1,4 +1,5 @@
 #include "API.h"
+#include<algorithm>
 using namespace std;
 namespace API {
 	std::vector<std::string> screenBuffer; //准备输出到屏幕的Buffer。例如，当RecordManager完成查询操作时，把要输出的内容都丢到这里。
@@ -54,43 +55,36 @@ Common::Tuple * API::Api::GetOneTuple(Common::Table * table, int offset)
 
 void API::Api::GetOffsets(std::vector<int>&offsets,Common::Table * table, std::vector<Common::Compares>* conditions)
 {
-	// 选出所有在有index列上的条件
-	std::vector<Common::Compares> conditionsOnIndex, conditionsOther;
+	// 初始化result，包括文件所有的块
+	string fileName = table->name + "_rec";
+	int handle = bufferm.NewPage();
+	bufferm.SetFilename(fileName, handle);
+	int len = bufferm.GetFileSize(handle);
+	std::set<int> result;
+	for(int i = 0; i < len; i += Buffer::BLOCKCAPACITY)
+		result.insert(i);
+	// 选出所有在有index的列上的条件
+	std::vector<Common::Compares> conditionsOnIndex;
 	for(auto con: *conditions){
 		indexm.setWorkspace(table->name, con.attri);
 		if(indexm.existIndex())
 			conditionsOnIndex.push_back(con);
-		else
-			conditionsOther.push_back(con);
 	}
 	// 用indexm按照那些在index列上的条件select
 	// 方法：对每个条件的结果取交集
-	std::set<int> result;
-	bool first = true;
 	for(auto con: conditionsOnIndex){
 		indexm.setWorkspace(table->name, con.attri);
 		std::set<int> tmp = indexm.select(con);
-		if(first){
-			first = false;
-			result = tmp;
-		}
-		else{
-			std::vector<int> newResult;
-			std::set_intersection(result.begin(), result.end(), 
-			tmp.begin(), tmp.end(), std::back_inserter(newResult));
-			result.clear();
-			for(auto i: newResult)
-				result.insert(i);
-		} 
+		std::vector<int> newResult;
+		std::set_intersection(result.begin(), result.end(), tmp.begin(), tmp.end(), std::back_inserter(newResult));
+		result.clear();
+		for(auto i: newResult)
+			result.insert(i);
 	}
-	// 在上一步的结果中，按照其余条件进行进一步筛选
-	for(auto i: result){
-		for(auto con: conditionsOther){
-			/* 如果offset i对应的record符合所有条件，保留 */
-			  /* TO BE DONE */
-		}
-	}
+	for(auto i: result)
+		offsets.push_back(i);
 }
+
 void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>& attributes)
 {
 	//Debug
@@ -184,7 +178,7 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 	long long offset = 0;
 	bufferm.SetPin(handle);
 	do {
-		bufferm.SetFileOffset(offset, handle);
+		bufferm.SetFileOffset(bufferm.GetFileSize(handle), handle);
 		bufferm.Load(handle);//读取文件
 		//
 		if (bufferm.GetSize(handle) < Buffer::BLOCKCAPACITY) {//如果该块有空余
@@ -195,7 +189,6 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 		offset += Buffer::BLOCKCAPACITY;
 	} while (!inputBuffer.empty());
 	bufferm.ResetPin(handle);
-	//throw(not_completed_exception());
 	return;
 }
 
@@ -217,6 +210,7 @@ void API::Api::Delete(std::string from, std::vector<Common::Compares>* condition
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	bufferm.SetPin(handle);
+	recordm.ClearDelRec();
 	for (int i = 0; i < offsets.size(); i++) {//依次处理每个offset
 		long long tmp = offsets[i];
 		bufferm.SetFileOffset(tmp, handle);
@@ -226,8 +220,7 @@ void API::Api::Delete(std::string from, std::vector<Common::Compares>* condition
 		bufferm.Save(handle);//删除后保存
 	}
 	bufferm.ResetPin(handle);
-	//
-	//throw(not_completed_exception());
+	recordm.FillBlanks(table);//用文件末尾的tuple填删除操作留下的空位
 	return;
 }
 
