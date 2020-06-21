@@ -23,14 +23,15 @@ namespace Index{
 		int size;
 		int degree;
 		int root;
-		Node readNodeFromDisk(int loc);
-		void writeNodeToDisk(Node _n);
 		void splitNode(Node _n);
 		void mergeNode(Node _a, Node _b);
 		void updateAncIndex(Node _n, std::string _old, std::string _new);
 		void rebuild();
 	public:
 		static Buffer::BufferManager *BM;
+		Node readNodeFromDisk(int loc);
+		void writeNodeToDisk(Node _n);
+		Node findNode(std::string _key);
 		int find(std::string _key);
 		void insert(std::string _key, int _value);
 		void remove(std::string _key);
@@ -50,13 +51,19 @@ namespace Index{
 		
 		// 在当前的表格、列创建索引
 		// 必须给出该列的宽度（字节数），以确定B+树的叉数
-		void createIndex(int _datawidth = 100);
+		void createIndex(int _datawidth = 50);
 		
 		// 在当前的表格、列drop索引
 		void dropIndex();
+
+		// 检查在当前表格、列上是否存在index
+		bool existIndex();
 		
 		// 通过key查找对应的tuple
 		int find(std::string _key);
+
+		// 通过条件查找对应的offsets
+		std::set<int> select(Common::Compares _con);
 		
 		// 插入一个<key, value>对
 		// key必须以string给出，如果是int/double需要转成string

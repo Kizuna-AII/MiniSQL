@@ -26,6 +26,22 @@ Common::Table * API::Api::GetTableByName(std::string & tableName)
 	return newTable;
 }
 
+Common::Tuple * API::Api::GetOneTuple(Common::Table * table, int offset)
+{
+	int tupleLen = table->GetDataSize();
+	
+	string fileName = table->name + "_rec"; //文件命名为 table_rec
+	int handle = bufferm.NewPage();
+	bufferm.SetFilename(fileName, handle);
+	bufferm.SetPin(handle);
+	bufferm.SetFileOffset(offset, handle);
+	bufferm.Load(handle);//读取指定的块
+	string &tmp = bufferm.GetBuffer(handle);
+	Common::Tuple* tuple = new Common::Tuple(tupleLen, tmp.c_str());//获取块的第一个tuple
+	bufferm.ResetPin(handle);
+	return tuple;
+}
+
 //void API::Api::AddIndex(Common::Table * table, int order, std::string key, int value)
 //{
 //	throw(not_completed_exception());
@@ -38,8 +54,42 @@ Common::Table * API::Api::GetTableByName(std::string & tableName)
 
 void API::Api::GetOffsets(std::vector<int>&offsets,Common::Table * table, std::vector<Common::Compares>* conditions)
 {
-	//请查看Select的代码行为
-	throw(not_completed_exception());
+	// 选出所有在有index列上的条件
+	std::vector<Common::Compares> conditionsOnIndex, conditionsOther;
+	for(auto con: *conditions){
+		indexm.setWorkspace(table->name, con.attri);
+		if(indexm.existIndex())
+			conditionsOnIndex.push_back(con);
+		else
+			conditionsOther.push_back(con);
+	}
+	// 用indexm按照那些在index列上的条件select
+	// 方法：对每个条件的结果取交集
+	std::set<int> result;
+	bool first = true;
+	for(auto con: conditionsOnIndex){
+		indexm.setWorkspace(table->name, con.attri);
+		std::set<int> tmp = indexm.select(con);
+		if(first){
+			first = false;
+			result = tmp;
+		}
+		else{
+			std::vector<int> newResult;
+			std::set_intersection(result.begin(), result.end(), 
+			tmp.begin(), tmp.end(), std::back_inserter(newResult));
+			result.clear();
+			for(auto i: newResult)
+				result.insert(i);
+		} 
+	}
+	// 在上一步的结果中，按照其余条件进行进一步筛选
+	for(auto i: result){
+		for(auto con: conditionsOther){
+			/* 如果offset i对应的record符合所有条件，保留 */
+			  /* TO BE DONE */
+		}
+	}
 }
 void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>& attributes)
 {
@@ -140,16 +190,6 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 		if (bufferm.GetSize(handle) < Buffer::BLOCKCAPACITY) {//如果该块有空余
 			recordm.Insert(table, handle);//调用recorm执行插入操作，同时更新index
 			bufferm.Save(handle);//保存
-
-			// index manager 向所有是index的列对应的B+树插入 <key, offset> 对
-			int tupleOffset = 0;
-			for(auto col: table->attributes){
-				if(col.indexName!="#NULL#"){
-					indexm.setWorkspace(into, col.name);	
-					indexm.insert(tuple.Get(col, tupleOffset), offset);
-				}
-			}
-
 		}
 		//
 		offset += Buffer::BLOCKCAPACITY;
