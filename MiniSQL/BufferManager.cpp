@@ -115,7 +115,7 @@ bool Buffer::BufferManager::GetPin(const size_t & handle) throw(const char *)
 	return buffer[index]->pin;
 }
 
-size_t Buffer::BufferManager::Write(const std::string &content, const size_t & handle)
+size_t Buffer::BufferManager::Write(const std::string & content, const size_t & handle)
 {
 	size_t index = this->ToIndex(handle);
 	std::string & buf = buffer[index]->buf;
@@ -238,4 +238,35 @@ bool Buffer::BufferManager::IsExist(const size_t & handle) const
 	return !_access(buffer[index]->filename.c_str(), 0);
 }
 
+DWORD Buffer::BufferManager::GetFileSize(const size_t & handle) const
+{
+	wchar_t wFilename[100];
+	swprintf(wFilename, 100, L"%hs", this->GetFilename(handle).c_str());
+	HANDLE fileHandle = ::CreateFile(wFilename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (fileHandle == INVALID_HANDLE_VALUE)
+	{
+		::CloseHandle(fileHandle);
+		throw("Cannot Load File");
+	}
+	DWORD res = ::GetFileSize(fileHandle, NULL);
+	::CloseHandle(fileHandle);
+	return res;
+}
+//#include <io.h>
 
+//#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <stdio.h>
+void Buffer::BufferManager::SetFileSize(const DWORD & size, const size_t & handle)
+{
+	int fileHandle;
+	errno_t err;
+	::_sopen_s(&fileHandle, this->GetFilename(handle).c_str(), _O_RDWR, _SH_DENYNO, _S_IREAD | _S_IWRITE);
+	if (fileHandle == -1)
+	{
+		::_close(fileHandle);
+		throw("Cannot Load File");
+	}
+	::_chsize(fileHandle, size);
+	::_close(fileHandle);
+}

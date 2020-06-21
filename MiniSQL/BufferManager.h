@@ -3,6 +3,9 @@
 #include "Structure.h"
 #include <map>
 #include <set>
+#include <Windows.h>
+#include <comdef.h>
+#include <fcntl.h>
 
 
 constexpr size_t DEFAULTHANDLE = (size_t)4294967295;
@@ -76,7 +79,11 @@ namespace Buffer
 		void Delete(const size_t & handle = DEFAULTHANDLE) const;
 			// 删除handle对应的块对应的硬盘文件
 		bool IsExist(const size_t & handle = DEFAULTHANDLE) const;
-
+			// 返回该handle对应的硬盘文件是否已经存在
+		DWORD GetFileSize(const size_t & handle = DEFAULTHANDLE) const;
+			// 返回该handle对应的硬盘文件的长度；若文件不存在抛出异常
+		void SetFileSize(const DWORD & size, const size_t & handle = DEFAULTHANDLE);
+			// 将该handle对应的硬盘文件进行长度修改（截短）；若文件不存在抛出异常
 	};
 
 };

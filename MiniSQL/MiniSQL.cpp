@@ -328,6 +328,15 @@ int bufmain()
 		BM.SetSize(0);
 	}
 
+	getchar();
+	
+	// 文件大小修改
+	BM.Initialize();
+	BM.NewPage();
+	BM.SetFilename("../test/big.txt");
+	std::cout << "Old File Size = " << BM.GetFileSize() << std::endl;
+	BM.SetFileSize(10);
+	std::cout << "New File Size = " << BM.GetFileSize() << std::endl;
 
 	getchar();
 
