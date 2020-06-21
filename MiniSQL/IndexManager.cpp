@@ -177,9 +177,7 @@ void Index::Tree::updateAncIndex(Node _n, std::string _old, std::string _new){
 void Index::Tree::rebuild(){
 	std::vector<std::string> keys;
 	std::vector<int> ptrs;
-	Node node = readNodeFromDisk(root);
-	while(!node.isLeaf)
-		node = readNodeFromDisk(node.ptr[0]);
+	Node node = leftMostNode();
 	while(node.id != -1){
 		for(int i = 0; i < node.key.size(); i++){
 			keys.push_back(node.key[i]);
@@ -197,24 +195,31 @@ void Index::Tree::rebuild(){
 	}
 }
 
-int Index::Tree::find(std::string _key){
+Index::Node Index::Tree::findNode(std::string _key){
 	Node node = readNodeFromDisk(root);
 	while(!node.isLeaf){// until this is a leaf node, do:
 		int childNo = node.findKeyLoc(_key);
 		node = readNodeFromDisk(node.ptr[childNo]);
 	}
-	int loc = node.findKeyLoc(_key);
-	loc--;
+	return node;
+}
+
+Index::Node Index::Tree::leftMostNode(){
+	Node node = root;
+	while(!node.isLeaf)
+		node = readNodeFromDisk(node.ptr[0]);
+	return node;
+}
+
+int Index::Tree::find(std::string _key){
+	Node node = findNode(_key);
+	int loc = node.findKeyLoc(_key) - 1;
 	if(loc < 0 || node.key[loc] != _key) throw("Key " + _key + " doesn't exist");
 	return node.ptr[loc];
 }
 
 void Index::Tree::insert(std::string _key, int _value){
-	Node node = readNodeFromDisk(root);// read the root from disk
-	while(!node.isLeaf){// until this is a leaf node, do:
-		int childNo = node.findKeyLoc(_key);
-		node = readNodeFromDisk(node.ptr[childNo]);
-	}
+	Node node = findNode(_key);
 	int loc = node.findKeyLoc(_key);
 	node.key.insert(node.key.begin() + loc, _key);
 	node.ptr.insert(node.ptr.begin() + loc, _value);
@@ -222,11 +227,7 @@ void Index::Tree::insert(std::string _key, int _value){
 }
 
 void Index::Tree::remove(std::string _key){
-	Node node = readNodeFromDisk(root);
-	while(!node.isLeaf){// until this is a leaf node, do:
-		int childNo = node.findKeyLoc(_key);
-		node = readNodeFromDisk(node.ptr[childNo]);
-	}
+	Node node = findNode(_key);
 	int loc = node.findKeyLoc(_key) - 1;
 	if(loc < 0 || node.key[loc] != _key) throw("Key " + _key + " doesn't exist");
 	// delete the key and corresponding ptr
@@ -301,7 +302,7 @@ void Index::IndexManager::setWorkspace(std::string _table, std::string _attribut
 }
 
 void Index::IndexManager::createIndex(int _datasize){
-	if(trees.find(workspace) != trees.end())
+	if(existIndex())
 		throw("Index on " + workspace + " already existed.");
 	trees[workspace] = Tree(workspace, _datasize);
 }
@@ -311,8 +312,51 @@ void Index::IndexManager::dropIndex(){
 	trees.erase(workspace);
 }
 
+bool Index::IndexManager::existIndex(){
+	return (trees.find(workspace) != trees.end());
+}
+
 int Index::IndexManager::find(std::string _key){
 	return trees[workspace].find(_key);
+}
+
+std::set<int> Index::IndexManager::select(Common::Compares _con){
+	std::set<int> ret;
+	Node node = trees[workspace].findNode(_con.value);
+	int loc = node.findKeyLoc(_con.value) - 1;
+	if(_con.ctype == Common::CompareType::je){
+		ret.insert(node.ptr[loc]);
+		return ret;
+	}
+	if(_con.ctype == Common::CompareType::ja || 
+		_con.ctype == Common::CompareType::jae){
+		if(_con.ctype == Common::CompareType::ja) loc++;
+		while(node.id != -1){
+			while(loc < node.key.size()){
+				ret.insert(node.ptr[loc]);
+			}
+			loc = 0;
+			node = trees[workspace].readNodeFromDisk(node.rightSibling());
+		}
+		return ret;
+	}
+	if(_con.ctype == Common::CompareType::jb || 
+		_con.ctype == Common::CompareType::jbe){
+		node = trees[workspace].leftMostNode();
+		loc = 0;
+		while(node.key[loc] < _con.value){
+			ret.insert(node.ptr[loc]);
+			loc++;
+			if(loc == node.key.size()){
+				node = trees[workspace].readNodeFromDisk(node.rightSibling());
+				loc = 0;
+			}
+		}
+		if(_con.ctype == Common::CompareType::jbe &&
+			node.key[loc] == _con.value)
+			ret.insert(node.ptr[loc]);
+		return ret;
+	}
 }
 
 void Index::IndexManager::insert(std::string _key, int _value){
