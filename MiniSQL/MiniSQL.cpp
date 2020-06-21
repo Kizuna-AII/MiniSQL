@@ -192,7 +192,7 @@ public:
 		return;
 	}
 };
-
+/*
 int main() {
 	/// initialize I/O
 	//freopen("in.txt", "r", stdin);
@@ -203,7 +203,7 @@ int main() {
 	tar->Run(cin, cout, "quit");
 	//
 	return 0;
-}
+}*/
 
 
 /*
@@ -345,9 +345,9 @@ int bufmain()
 	return 0;
 }
 */
-/*
+
 // sample program for catalog manager
-int catalogmain()
+int main()
 {
 	Buffer::BufferManager* BMP = new Buffer::BufferManager();
 	BMP->Initialize();
@@ -380,4 +380,3 @@ int catalogmain()
 
 	return 0;
 }
-*/

@@ -11,6 +11,8 @@ void Catalog::CatalogManager::ChangeTable(size_t handle, Common::Table * table)
 	BMP->SetSize(0, handle);
 	std::string returnStr = TableToStr(table);
 	BMP->Write(returnStr, handle);
+	BMP->Delete(handle);
+	BMP->Save(handle);
 	return;
 }
 
@@ -32,8 +34,41 @@ void Catalog::CatalogManager::Initialization(Buffer::BufferManager * target)
 	this->tableHandle = BMP->NewPage();
 	if (this->tableHandle == 0)
 		this->tableHandle = BMP->NewPage();
-	BMP->Write("0", tableHandle);
+	BMP->SetFilename("../test/catalog/#base#.txt", this->tableHandle);
+	if (!BMP->IsExist(this->tableHandle))
+	{
+		BMP->Write("0", this->tableHandle);
+		BMP->Save(this->tableHandle);
+		return;
+	}
+	BMP->Load(this->tableHandle);
 	BMP->SetPin(tableHandle);
+	std::string tables = BMP->GetBuffer(tableHandle);
+	std::istringstream tableStreamIn(tables);
+	std::ostringstream tableStreamOut("");
+	int count;
+	tableStreamIn >> count;
+	tableStreamOut << count << " ";
+	if (count != 0)
+	{
+		for (int i = 0; i <= count - 1; i++)
+		{
+			std::string tempname;
+			size_t temphandle;
+			tableStreamIn >> tempname >> temphandle;
+			temphandle = BMP->NewPage();
+			if (temphandle == 0)
+				temphandle = BMP->NewPage();
+			BMP->SetPin(temphandle);
+			BMP->SetFilename("../test/catalog/" + tempname + ".txt", temphandle);
+			BMP->Load(temphandle);
+			tableStreamOut << tempname << " " << temphandle << " ";
+		}
+		BMP->SetSize(0, this->tableHandle);
+		BMP->Write(tableStreamOut.str(), this->tableHandle);
+		BMP->Delete(this->tableHandle);
+		BMP->Save(this->tableHandle);
+	}
 	return;
 }
 
@@ -48,6 +83,8 @@ size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 		BMP->SetPin(handle);
 		std::string str = TableToStr(tableName);
 		BMP->Write(str, handle);
+		BMP->SetFilename("../test/catalog/" + tableName->name + ".txt", handle);
+		BMP->Save(handle);
 		std::string tables = BMP->GetBuffer(tableHandle);
 		std::istringstream tableStreamIn(tables);
 		std::ostringstream tableStreamOut("");
@@ -68,6 +105,8 @@ size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 		std::string returnStr = tableStreamOut.str();
 		BMP->SetSize(0, tableHandle);
 		BMP->Write(returnStr, tableHandle);
+		BMP->Delete(tableHandle);
+		BMP->Save(tableHandle);
 		return handle;
 	}
 }
@@ -79,6 +118,7 @@ bool Catalog::CatalogManager::DeleteTable(std::string tableName)
 	else
 	{
 		BMP->SetSize(0, handle);
+		BMP->Delete(handle);
 		BMP->ResetPin(handle);
 		std::string tables = BMP->GetBuffer(tableHandle);
 		std::istringstream tableStreamIn(tables);
@@ -100,6 +140,8 @@ bool Catalog::CatalogManager::DeleteTable(std::string tableName)
 		std::string returnStr = tableStreamOut.str();
 		BMP->SetSize(0, tableHandle);
 		BMP->Write(returnStr, tableHandle);
+		BMP->Delete(tableHandle);
+		BMP->Save(tableHandle);
 		return true;
 	}
 }
@@ -186,6 +228,34 @@ void Catalog::CatalogManager::ShowTables()
 {
 	std::cout << BMP->GetBuffer(tableHandle) << std::endl;
 	return;
+}
+
+std::vector<std::string> Catalog::CatalogManager::ShowIndex()
+{
+	std::vector<std::string> result;
+	std::string tables = BMP->GetBuffer(tableHandle);
+	std::istringstream tableStreamIn(tables);
+	int count;
+	tableStreamIn >> count;
+	if (count == 0) return result;
+	else
+	{
+		for (int i = 0; i <= count - 1; i++)
+		{
+			size_t temphandle;
+			std::string tempname;
+			tableStreamIn >> tempname >> temphandle;
+			std::string str = BMP->GetBuffer(temphandle);
+			Common::Table* temptable = StrToTable(str);
+			for (int j = 0; j <= temptable->attributes.size() - 1; j++)
+			{
+				if (temptable->attributes[j].indexName != noIndex)
+					result.push_back(tempname + "#" + temptable->attributes[j].name);
+			}
+			delete temptable;
+		}
+	}
+	return result;
 }
 
 std::string Catalog::TableToStr(Common::Table * table)

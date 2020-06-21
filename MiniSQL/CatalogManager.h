@@ -44,5 +44,8 @@ namespace Catalog
 		int FindIndex(std::string tableName, std::string indexName);
 		// 用于debug
 		void ShowTables();
+		// 返回表内所有存在的索引，形式为"表名#列名"
+		std::vector<std::string> ShowIndex();
+
 	};
 }
