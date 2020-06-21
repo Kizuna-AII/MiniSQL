@@ -26,6 +26,22 @@ Common::Table * API::Api::GetTableByName(std::string & tableName)
 	return newTable;
 }
 
+Common::Tuple * API::Api::GetOneTuple(Common::Table * table, int offset)
+{
+	int tupleLen = table->GetDataSize();
+	
+	string fileName = table->name + "_rec"; //文件命名为 table_rec
+	int handle = bufferm.NewPage();
+	bufferm.SetFilename(fileName, handle);
+	bufferm.SetPin(handle);
+	bufferm.SetFileOffset(offset, handle);
+	bufferm.Load(handle);//读取指定的块
+	string &tmp = bufferm.GetBuffer(handle);
+	Common::Tuple* tuple = new Common::Tuple(tupleLen, tmp.c_str());//获取块的第一个tuple
+	bufferm.ResetPin(handle);
+	return tuple;
+}
+
 //void API::Api::AddIndex(Common::Table * table, int order, std::string key, int value)
 //{
 //	throw(not_completed_exception());

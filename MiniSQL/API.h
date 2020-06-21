@@ -76,6 +76,8 @@ namespace API {
 		Api();
 		//获取Table信息
 		Common::Table* GetTableByName(std::string& tableName);
+		//指定table，获取offset位置的Tuple
+		Common::Tuple* GetOneTuple(Common::Table* table, int offset);
 		//指定table和conditions，根据index查询结果，向offsets中填入需要查找的tuple的所在块的offset
 		//例如，在[0,4096)和[4096,8192)之间均有多个目标tuple，应在vector中填入0和4096
 		//如果conditions为NULL,则返回可以覆盖整个文件的offsets
