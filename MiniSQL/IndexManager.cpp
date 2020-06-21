@@ -324,28 +324,33 @@ std::set<int> Index::IndexManager::select(Common::Compares _con){
 	std::set<int> ret;
 	Node node = trees[workspace].findNode(_con.value);
 	int loc = node.findKeyLoc(_con.value) - 1;
+
+	auto blockCeil = [](int offset)->int{
+		return offset / Buffer::BLOCKCAPACITY * Buffer::BLOCKCAPACITY;
+	};
+
 	if(_con.ctype == Common::CompareType::je){
-		ret.insert(node.ptr[loc]);
+		ret.insert(blockCeil(node.ptr[loc]));
 		return ret;
 	}
-	if(_con.ctype == Common::CompareType::ja || 
+	else if(_con.ctype == Common::CompareType::ja || 
 		_con.ctype == Common::CompareType::jae){
 		if(_con.ctype == Common::CompareType::ja) loc++;
 		while(node.id != -1){
 			while(loc < node.key.size()){
-				ret.insert(node.ptr[loc]);
+				ret.insert(blockCeil(node.ptr[loc]));
 			}
 			loc = 0;
 			node = trees[workspace].readNodeFromDisk(node.rightSibling());
 		}
 		return ret;
 	}
-	if(_con.ctype == Common::CompareType::jb || 
+	else if(_con.ctype == Common::CompareType::jb || 
 		_con.ctype == Common::CompareType::jbe){
 		node = trees[workspace].leftMostNode();
 		loc = 0;
 		while(node.key[loc] < _con.value){
-			ret.insert(node.ptr[loc]);
+			ret.insert(blockCeil(node.ptr[loc]));
 			loc++;
 			if(loc == node.key.size()){
 				node = trees[workspace].readNodeFromDisk(node.rightSibling());
@@ -354,7 +359,7 @@ std::set<int> Index::IndexManager::select(Common::Compares _con){
 		}
 		if(_con.ctype == Common::CompareType::jbe &&
 			node.key[loc] == _con.value)
-			ret.insert(node.ptr[loc]);
+			ret.insert(blockCeil(node.ptr[loc]));
 		return ret;
 	}
 }

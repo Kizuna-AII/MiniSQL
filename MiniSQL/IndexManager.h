@@ -32,6 +32,7 @@ namespace Index{
 		Node readNodeFromDisk(int loc);
 		void writeNodeToDisk(Node _n);
 		Node findNode(std::string _key);
+		Node leftMostNode();
 		int find(std::string _key);
 		void insert(std::string _key, int _value);
 		void remove(std::string _key);
@@ -62,7 +63,8 @@ namespace Index{
 		// 通过key查找对应的tuple
 		int find(std::string _key);
 
-		// 通过条件查找对应的offsets
+		// 通过条件查找对应的【对应的块】offsets
+		// 例如，找到了ptr信息{1000,4097,5100}， 结果会是{0,4096}
 		std::set<int> select(Common::Compares _con);
 		
 		// 插入一个<key, value>对
