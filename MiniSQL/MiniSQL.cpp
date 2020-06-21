@@ -27,6 +27,7 @@ private:
 		return;
 	}
 	int Parse_once(istream &fin) {
+		if (fin.peek() == ';')return -1;
 		string comm;
 		fin >> comm;
 		map<string, int>::iterator iter = parsemap.find(comm);
@@ -182,8 +183,9 @@ public:
 					}
 				}
 			}
-			catch (const exception &ex) {
+			catch (mexception &ex) {
 				cout << ex.what() << endl;
+				//cout << "wtf" << endl;
 			}
 		} while (flag);
 		cout << finflag << endl;

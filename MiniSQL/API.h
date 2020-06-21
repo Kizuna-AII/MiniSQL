@@ -9,26 +9,26 @@
 #include "IndexManager.h"
 namespace API {
 	//Exceptions
-	class mexception : std::exception {
+	class mexception{
 	protected:
 		std::string msg;
 	public:
 		mexception() :msg("") {};
 		mexception(const char* _msg) :msg(_msg) {};
-		virtual char const* what() const { return ""; }
+		virtual std::string what() const { return "exp"; }
 	};
 	//
-	class not_completed_exception : mexception {
+	class not_completed_exception : public mexception {
 	public:
 		not_completed_exception() { this->msg =""; }
 		not_completed_exception(const char* _msg) { this->msg = _msg; }
-		virtual char const* what() const { return (this->msg + " | function not implemented").c_str(); }
+		std::string what() const { return (this->msg + " | function not implemented"); }
 	};
 	//
-	class wrong_command_error : mexception {
+	class wrong_command_error : public mexception {
 	public:
 		wrong_command_error(const char* _msg) { this->msg = _msg; }
-		virtual char const* what() const { return "wrong command"; }
+		std::string what() const { return (std::string("wrong command: ") + this->msg); }
 	};
 
 	// Exception in Catalog Manager
@@ -36,31 +36,31 @@ namespace API {
 	class table_exist_error : mexception {
 	public:
 		table_exist_error(const std::string _msg) { this->msg = _msg; } 
-		virtual char const* what() const { return ("Table "+this->msg+" already exist!").c_str(); }
+		virtual std::string what() const { return ("Table "+this->msg+" already exist!"); }
 	};
 	// TABLE_NOTFIND_ERROR : Delete Table & Create Index & Find Table
 	class table_notfind_error : mexception {
 	public:
 		table_notfind_error(const std::string _msg) { this->msg = _msg; }
-		virtual char const* what() const { return ("Table " + this->msg + " don't exist!").c_str();}
+		virtual std::string what() const { return ("Table " + this->msg + " don't exist!");}
 	};
 	// COLUMN_NOTFIND_ERROR : Create Index
 	class column_notfind_error : mexception {
 	public:
 		column_notfind_error(const std::string _msg) { this->msg = _msg; }
-		virtual char const* what() const { return ("Column " + this->msg + " don't exist!").c_str(); }
+		virtual std::string what() const { return ("Column " + this->msg + " don't exist!"); }
 	};
 	// INDEX_EXIST_ERROR : Create Index
 	class index_exist_error : mexception {
 	public:
 		index_exist_error(const std::string _msg) { this->msg = _msg; }
-		virtual char const* what() const { return ("Index " + this->msg + " already exists").c_str(); }
+		virtual std::string what() const { return ("Index " + this->msg + " already exists"); }
 	};
 	// INDEX_NOTFIND_ERROR : Delete Index
 	class index_notfind_error : mexception {
 	public:
 		index_notfind_error(const std::string _msg) { this->msg = _msg; }
-		virtual char const* what() const { return ("Index " + this->msg + " don't exist!").c_str(); }
+		virtual std::string what() const { return ("Index " + this->msg + " don't exist!"); }
 	};
 
 	//
