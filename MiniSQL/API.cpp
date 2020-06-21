@@ -140,9 +140,8 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 		if (bufferm.GetSize(handle) < Buffer::BLOCKCAPACITY) {//如果该块有空余
 			recordm.Insert(table, handle);//调用recorm执行插入操作，同时更新index
 			bufferm.Save(handle);//保存
-			/*
+
 			// index manager 向所有是index的列对应的B+树插入 <key, offset> 对
-			//该部分在recorm中实现
 			int tupleOffset = 0;
 			for(auto col: table->attributes){
 				if(col.indexName!="#NULL#"){
@@ -150,7 +149,7 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 					indexm.insert(tuple.Get(col, tupleOffset), offset);
 				}
 			}
-			*/
+
 		}
 		//
 		offset += Buffer::BLOCKCAPACITY;
