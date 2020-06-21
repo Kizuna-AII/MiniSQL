@@ -25,9 +25,10 @@ namespace Record{
 			IDM = target;
 			return;
 		}
+		void ClearDelRec();
 		//传入table名,判断条件vector,要处理的块,将查询到的结果输出到common::ScreenBuffer
 		void Select(Common::Table* table,std::vector<Common::Compares>*condition, const size_t & handle = DEFAULTHANDLE);
-
+		void FillBlanks(Common::Table* table);
 		//传入table名,判断条件vector,要处理的块,删除满足判断条件的行
 		void Delete(Common::Table* table,std::vector<Common::Compares>*condition, const size_t & handle = DEFAULTHANDLE);
 		//传入table名，从common::ScreenBuffer的InputBuffer中读取要插入的tuple，写入指定的block中。

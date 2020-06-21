@@ -104,7 +104,11 @@ namespace Record{
 		}
 		return;
 	}
-    //传入table名,判断条件vector,要处理的块
+	void RecordManager::ClearDelRec(){
+		this->rec.clear();
+		return;
+	}
+	//传入table名,判断条件vector,要处理的块
     //将查询到的结果输出到common::ScreenBuffer
     void RecordManager::Select(Common::Table* tableName,std::vector<Common::Compares>*condition, const size_t & handle){
 		string buffer = BMP->GetBuffer(handle);
@@ -112,31 +116,62 @@ namespace Record{
 		rSelect(tableName,condition,buffer,mxSize,false);
         return;
     }
+	void RecordManager::FillBlanks(Common::Table * table){
+		string fileName = table->name + "_rec"; //文件命名为 table_rec
+		int handle = BMP->NewPage();
+		int endHandle = BMP->NewPage();
+		BMP->SetFilename(fileName, handle);
+		BMP->SetPin(handle);
+		BMP->SetPin(endHandle);
+		long long last = rec[0];
+		BMP->SetFileOffset(last,handle);
+		BMP->Load(handle);
+		//
+		int tupleLen = table->GetDataSize();
+		string& buffer = BMP->GetBuffer(handle);
+		for (int i = 0; i < rec.size(); i++) {//依次处理每个offset
+			long long tmp = rec[i];
+			if (tmp >= last + Buffer::BLOCKCAPACITY) {//如果需要，加载新块
+				BMP->Save(handle);
+				BMP->SetFileOffset(tmp, handle);
+				last = tmp;
+				BMP->Load(handle);
+				buffer = BMP->GetBuffer(handle);
+			}
+			//读取文件最末一行
+			long long src = BMP->GetFileSize(handle) - tupleLen;
+			if (rec[i] == src) {
+				BMP->SetFileSize(src, handle);
+				continue;
+			}
+			BMP->SetFileOffset(src, endHandle);
+			BMP->Load(endHandle);
+			//用最末一行替换当前空位，更新索引
+			RemoveIndex(table, BMP->GetBuffer(endHandle).c_str());
+			AddIndex(table, BMP->GetBuffer(endHandle).c_str(),rec[i]);
+			buffer.replace((size_t)rec[i] - last, (size_t)tupleLen, BMP->GetBuffer(endHandle).c_str());
+			//删除最末一行，更新文件长度
+			BMP->SetFileSize(src, handle);
+		}
+		//
+		BMP->Save(handle);
+		BMP->ResetPin(handle);
+		BMP->ResetPin(endHandle);
+		//
+	}
     //传入table名,判断条件vector,要处理的块,删除满足判断条件的行
 	void RecordManager::Delete(Common::Table* table,std::vector<Common::Compares>*condition, const size_t & handle){
-        rec.clear();//清空vector rec
         //由rSelect选出所有符合条件的行
 		string& buffer = BMP->GetBuffer(handle);
 		int mxSize = BMP->GetSize(handle);
         rSelect(table,condition,buffer, mxSize,true);
-		//
-		//处理所有符合条件的行，由于是删除操作，无需判断溢出
-		int tupleLen = table->GetDataSize();
-		int nowpos = mxSize - tupleLen;
-        for(int i=0;i < rec.size();i++){
-			while (nowpos == rec[rec.size()-1]) {//如果末尾行需要删除，则直接删除
-				RemoveIndex(table, buffer.c_str() + nowpos);
-				nowpos -= tupleLen;
-			}
-			if (i >= rec.size())break;
-			//否则用末尾行替换当前要删除行
+		//获取块自身的偏移量
+		int blockOffset = BMP->GetFileOffset(handle);
+		//处理所有符合条件的行，删除所有索引
+		for (int i = 0; i < rec.size(); i++) {
 			RemoveIndex(table, buffer.c_str() + rec[i]);
-			RemoveIndex(table, buffer.c_str() + nowpos);
-			buffer.replace((size_t)rec[i], (size_t)tupleLen, buffer.c_str() + nowpos);
-			AddIndex(table, buffer.c_str() + rec[i],rec[i]);
-			nowpos -= tupleLen;
-        }
-		BMP->SetSize(nowpos + tupleLen, handle);//更新buffer的size
+			rec[i] += blockOffset;//将块内偏移量更新为全局偏移量
+		}
         return;
     }
 	//传入table名，从common::ScreenBuffer的InputBuffer中读取要插入的tuple，写入指定的block中。
@@ -149,11 +184,12 @@ namespace Record{
 		for (int i = ibuffer.size()-1; i >= 0; ) {
 			space = Buffer::BLOCKCAPACITY - BMP->GetSize(handle);
 			if ((int)ibuffer[i].size() > space)break;
+			//更新索引
+			AddIndex(table, ibuffer[i].c_str(), BMP->GetFileOffset(handle)+BMP->GetSize(handle));
+			//写入数据
 			BMP->Write(ibuffer[i], handle);
-			AddIndex(table, ibuffer[i].c_str(),BMP->GetSize(handle));
 			ibuffer.pop_back();
 		}
-		
         return 0;
     }
 

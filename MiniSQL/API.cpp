@@ -1,4 +1,5 @@
 #include "API.h"
+#include<algorithm>
 using namespace std;
 namespace API {
 	std::vector<std::string> screenBuffer; //准备输出到屏幕的Buffer。例如，当RecordManager完成查询操作时，把要输出的内容都丢到这里。
@@ -184,7 +185,7 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 	long long offset = 0;
 	bufferm.SetPin(handle);
 	do {
-		bufferm.SetFileOffset(offset, handle);
+		bufferm.SetFileOffset(bufferm.GetFileSize(handle), handle);
 		bufferm.Load(handle);//读取文件
 		//
 		if (bufferm.GetSize(handle) < Buffer::BLOCKCAPACITY) {//如果该块有空余
@@ -195,7 +196,6 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 		offset += Buffer::BLOCKCAPACITY;
 	} while (!inputBuffer.empty());
 	bufferm.ResetPin(handle);
-	//throw(not_completed_exception());
 	return;
 }
 
@@ -217,6 +217,7 @@ void API::Api::Delete(std::string from, std::vector<Common::Compares>* condition
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	bufferm.SetPin(handle);
+	recordm.ClearDelRec();
 	for (int i = 0; i < offsets.size(); i++) {//依次处理每个offset
 		long long tmp = offsets[i];
 		bufferm.SetFileOffset(tmp, handle);
@@ -226,8 +227,7 @@ void API::Api::Delete(std::string from, std::vector<Common::Compares>* condition
 		bufferm.Save(handle);//删除后保存
 	}
 	bufferm.ResetPin(handle);
-	//
-	//throw(not_completed_exception());
+	recordm.FillBlanks(table);//用文件末尾的tuple填删除操作留下的空位
 	return;
 }
 
