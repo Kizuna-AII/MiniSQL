@@ -202,6 +202,7 @@ std::streamsize Buffer::BufferManager::Load(const size_t & handle)
 	std::streamsize readSize = inFile.gcount();
 	buffer[index]->size = (size_t)readSize; // 更新大小
 	buffer[index]->buf.replace(0, (size_t)readSize, inBuf, 0, (size_t)readSize);
+	buffer[index]->buf.resize(Buffer::BLOCKCAPACITY, '\000'); // 维持size
 	buffer[index]->fileOffset += buffer[index]->size;
 	inFile.close();
 	return readSize;
@@ -256,7 +257,6 @@ DWORD Buffer::BufferManager::GetFileSize(const size_t & handle) const
 void Buffer::BufferManager::SetFileSize(const DWORD & size, const size_t & handle)
 {
 	int fileHandle;
-	errno_t err;
 	::_sopen_s(&fileHandle, this->GetFilename(handle).c_str(), _O_RDWR, _SH_DENYNO, _S_IREAD | _S_IWRITE);
 	if (fileHandle == -1)
 	{

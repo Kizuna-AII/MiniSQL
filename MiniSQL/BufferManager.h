@@ -44,13 +44,14 @@ namespace Buffer
 		~BufferManager() noexcept;
 		void Initialize() noexcept; // 初始化整个Buffer Manager
 
+	public: // 内存管理函数
 		size_t NewPage() throw(const char *); // 获取一个新的buffer页，返回新页handle（保证唯一）
 		size_t GetFreePageNum() const noexcept; // 获取当前空余页的数量
-
 		void SetPin(const size_t & handle = DEFAULTHANDLE) throw(const char *); // 锁定对应handle的块
 		void ResetPin(const size_t & handle = DEFAULTHANDLE) throw(const char *); // 解锁对应handle的块
 		bool GetPin(const size_t & handle = DEFAULTHANDLE) throw(const char *); // 获取对应handle的块的锁定状态
 
+	public: // Buffer读写函数
 		size_t Write(const std::string & content, const size_t & handle = DEFAULTHANDLE);
 			// 向handle对应的块写入content，返回未写入的长度（全部写入成功返回0）
 		const std::string & Read(const size_t & handle = DEFAULTHANDLE) const;
@@ -62,8 +63,9 @@ namespace Buffer
 		size_t GetSize(const size_t & handle = DEFAULTHANDLE) const;
 			// 返回handle对应块的目前大小
 		std::string & GetBuffer(const size_t & handle = DEFAULTHANDLE);
-			// 向handle对应的块读取数据，返回字符串的直接引用（便于自由管理）
+			// 向handle对应的块读取数据，返回字符串可修改的直接引用（便于自由管理，但是十分危险）
 
+	public: // 文件读写函数
 		void SetFilename(const std::string &filename, const size_t & handle = DEFAULTHANDLE);
 			// 设置handle对应的块的I/O文件名
 		std::string GetFilename(const size_t & handle = DEFAULTHANDLE) const;
