@@ -192,7 +192,7 @@ public:
 		return;
 	}
 };
-/*
+
 int main() {
 	/// initialize I/O
 	//freopen("in.txt", "r", stdin);
@@ -203,7 +203,7 @@ int main() {
 	tar->Run(cin, cout, "quit");
 	//
 	return 0;
-}*/
+}
 
 
 /*
@@ -345,9 +345,9 @@ int bufmain()
 	return 0;
 }
 */
-
+/*
 // sample program for catalog manager
-int main()
+int catalogmain()
 {
 	Buffer::BufferManager* BMP = new Buffer::BufferManager();
 	BMP->Initialize();
@@ -372,9 +372,12 @@ int main()
 	std::cout << CMP->FindTable("first_table") << std::endl;
 	std::cout << CMP->CreateIndex("first_table", "first_column", "yes") << std::endl;
 	std::cout << CMP->CreateIndex("first_table", "second_column", "newindex") << std::endl;
-	std::cout << CMP->DeleteIndex("first_table", "yes") << std::endl;
 	std::cout << CMP->FindIndex("first_table", "newindex") << std::endl;
 	std::cout << CMP->FindTable("first_table") << std::endl;
-
+	std::vector<std::string> temp = CMP->ShowIndex();
+	for (int i = 0; i <= temp.size() - 1; i++)
+	{
+		std::cout << temp[i] << std::endl;
+	}
 	return 0;
-}
+}*/

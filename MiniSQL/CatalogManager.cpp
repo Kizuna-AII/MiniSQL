@@ -12,6 +12,7 @@ void Catalog::CatalogManager::ChangeTable(size_t handle, Common::Table * table)
 	std::string returnStr = TableToStr(table);
 	BMP->Write(returnStr, handle);
 	BMP->Delete(handle);
+	BMP->SetFileOffset(0, handle);
 	BMP->Save(handle);
 	return;
 }
@@ -67,6 +68,7 @@ void Catalog::CatalogManager::Initialization(Buffer::BufferManager * target)
 		BMP->SetSize(0, this->tableHandle);
 		BMP->Write(tableStreamOut.str(), this->tableHandle);
 		BMP->Delete(this->tableHandle);
+		BMP->SetFileOffset(0, this->tableHandle);
 		BMP->Save(this->tableHandle);
 	}
 	return;
@@ -107,6 +109,7 @@ size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 		BMP->SetSize(0, tableHandle);
 		BMP->Write(returnStr, tableHandle);
 		BMP->Delete(tableHandle);
+		BMP->SetFileOffset(0, tableHandle);
 		BMP->Save(tableHandle);
 		return handle;
 	}
@@ -142,6 +145,7 @@ bool Catalog::CatalogManager::DeleteTable(std::string tableName)
 		BMP->SetSize(0, tableHandle);
 		BMP->Write(returnStr, tableHandle);
 		BMP->Delete(tableHandle);
+		BMP->SetFileOffset(0, tableHandle);
 		BMP->Save(tableHandle);
 		return true;
 	}
