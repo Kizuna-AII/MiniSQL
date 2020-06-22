@@ -201,7 +201,10 @@ std::streamsize Buffer::BufferManager::Load(const size_t & handle)
 	
 	std::streamsize readSize = inFile.gcount();
 	buffer[index]->size = (size_t)readSize; // 更新大小
-	buffer[index]->buf.replace(0, (size_t)readSize, inBuf, 0, (size_t)readSize);
+	for (std::streamsize i = 0; i < readSize; i++)
+		buffer[index]->buf[i] = inBuf[i];
+	//buffer[index]->buf.replace(0, (size_t)readSize, inBuf, 0, (size_t)readSize);
+	//std::cout << "buf = " << buffer[index]->buf << std::endl;
 	buffer[index]->buf.resize(Buffer::BLOCKCAPACITY, '\000'); // 维持size
 	buffer[index]->fileOffset += buffer[index]->size;
 	inFile.close();
