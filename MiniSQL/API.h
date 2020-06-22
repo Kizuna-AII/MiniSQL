@@ -33,19 +33,19 @@ namespace API {
 
 	// Exception in Catalog Manager
 	// TABLE_EXIST_ERROR : Create Table
-	class table_exist_error : mexception {
+	class table_exist_error : public mexception {
 	public:
 		table_exist_error(const std::string _msg) { this->msg = _msg; } 
 		virtual std::string what() const { return ("Table "+this->msg+" already exist!"); }
 	};
 	// TABLE_NOTFIND_ERROR : Delete Table & Create Index & Find Table
-	class table_notfind_error : mexception {
+	class table_notfind_error : public mexception {
 	public:
 		table_notfind_error(const std::string _msg) { this->msg = _msg; }
 		virtual std::string what() const { return ("Table " + this->msg + " don't exist!");}
 	};
 	// COLUMN_NOTFIND_ERROR : Create Index
-	class column_notfind_error : mexception {
+	class column_notfind_error : public mexception {
 	public:
 		column_notfind_error(const std::string _msg) { this->msg = _msg; }
 		virtual std::string what() const { return ("Column " + this->msg + " don't exist!"); }

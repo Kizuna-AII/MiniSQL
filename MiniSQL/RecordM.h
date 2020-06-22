@@ -4,6 +4,7 @@
 #include "Structure.h"
 #include "BufferManager.h"
 #include "IndexManager.h"
+
 const int max_attributes=50;
 namespace Record{
     class RecordManager{

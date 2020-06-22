@@ -1,10 +1,7 @@
 #include "API.h"
 #include<algorithm>
 using namespace std;
-namespace API {
-	std::vector<std::string> screenBuffer; //准备输出到屏幕的Buffer。例如，当RecordManager完成查询操作时，把要输出的内容都丢到这里。
-	std::vector<std::string> inputBuffer; //准备从丢给其他模块的Buffer。例如Insert时，把要insert的tuple都塞进去。
-}
+
 
 API::Api::Api()
 {
@@ -63,23 +60,27 @@ void API::Api::GetOffsets(std::vector<int>&offsets,Common::Table * table, std::v
 	std::set<int> result;
 	for(int i = 0; i < len; i += Buffer::BLOCKCAPACITY)
 		result.insert(i);
-	// 选出所有在有index的列上的条件
-	std::vector<Common::Compares> conditionsOnIndex;
-	for(auto con: *conditions){
-		indexm.setWorkspace(table->name, con.attri);
-		if(indexm.existIndex())
-			conditionsOnIndex.push_back(con);
-	}
-	// 用indexm按照那些在index列上的条件select
-	// 方法：对每个条件的结果取交集
-	for(auto con: conditionsOnIndex){
-		indexm.setWorkspace(table->name, con.attri);
-		std::set<int> tmp = indexm.select(con);
-		std::vector<int> newResult;
-		std::set_intersection(result.begin(), result.end(), tmp.begin(), tmp.end(), std::back_inserter(newResult));
-		result.clear();
-		for(auto i: newResult)
-			result.insert(i);
+	if (conditions != NULL) {
+
+
+		// 选出所有在有index的列上的条件
+		std::vector<Common::Compares> conditionsOnIndex;
+		for (auto con : *conditions) {
+			indexm.setWorkspace(table->name, con.attri);
+			if (indexm.existIndex())
+				conditionsOnIndex.push_back(con);
+		}
+		// 用indexm按照那些在index列上的条件select
+		// 方法：对每个条件的结果取交集
+		for (auto con : conditionsOnIndex) {
+			indexm.setWorkspace(table->name, con.attri);
+			std::set<int> tmp = indexm.select(con);
+			std::vector<int> newResult;
+			std::set_intersection(result.begin(), result.end(), tmp.begin(), tmp.end(), std::back_inserter(newResult));
+			result.clear();
+			for (auto i : newResult)
+				result.insert(i);
+		}
 	}
 	for(auto i: result)
 		offsets.push_back(i);
@@ -148,6 +149,7 @@ void API::Api::Select(std::string from, std::vector<Common::Compares>* condition
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	bufferm.SetPin(handle);
+	API::screenBuffer.clear();
 	for (int i = 0; i < offsets.size(); i++) {//依次处理每个offset
 		long long tmp = offsets[i];
 		bufferm.SetFileOffset(tmp, handle);
@@ -174,7 +176,9 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 	string fileName = into + "_rec"; //文件命名为 table_rec
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
-	
+	if (!bufferm.IsExist(handle)) {
+		bufferm.SetSize(0,handle);
+	}
 	long long offset = 0;
 	bufferm.SetPin(handle);
 	do {
