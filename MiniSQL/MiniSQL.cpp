@@ -374,8 +374,6 @@ int main()
 	std::cout << CMP->CreateIndex("first_table", "second_column", "newindex") << std::endl;
 	std::cout << CMP->DeleteIndex("first_table", "yes") << std::endl;
 	std::cout << CMP->FindIndex("first_table", "newindex") << std::endl;
-	std::cout << CMP->DeleteTable("second_table") << std::endl;
-	std::cout << CMP->DeleteTable("first_table") << std::endl;
 	std::cout << CMP->FindTable("first_table") << std::endl;
 
 	return 0;

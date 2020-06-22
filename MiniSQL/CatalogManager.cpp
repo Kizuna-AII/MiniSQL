@@ -2,7 +2,7 @@
 
 Common::Table * Catalog::CatalogManager::GetTable(size_t handle)
 {
-	std::string str = BMP->GetBuffer(handle);
+	std::string str = BMP->Read(handle);
 	return StrToTable(str);
 }
 
@@ -35,6 +35,7 @@ void Catalog::CatalogManager::Initialization(Buffer::BufferManager * target)
 	if (this->tableHandle == 0)
 		this->tableHandle = BMP->NewPage();
 	BMP->SetFilename("../test/catalog/#base#.txt", this->tableHandle);
+	BMP->SetPin(tableHandle);
 	if (!BMP->IsExist(this->tableHandle))
 	{
 		BMP->Write("0", this->tableHandle);
@@ -42,8 +43,7 @@ void Catalog::CatalogManager::Initialization(Buffer::BufferManager * target)
 		return;
 	}
 	BMP->Load(this->tableHandle);
-	BMP->SetPin(tableHandle);
-	std::string tables = BMP->GetBuffer(tableHandle);
+	std::string tables = BMP->Read(tableHandle);
 	std::istringstream tableStreamIn(tables);
 	std::ostringstream tableStreamOut("");
 	int count;
@@ -85,7 +85,8 @@ size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 		BMP->Write(str, handle);
 		BMP->SetFilename("../test/catalog/" + tableName->name + ".txt", handle);
 		BMP->Save(handle);
-		std::string tables = BMP->GetBuffer(tableHandle);
+		std::cout << str << std::endl;
+		std::string tables = BMP->Read(this->tableHandle);
 		std::istringstream tableStreamIn(tables);
 		std::ostringstream tableStreamOut("");
 		int count;
@@ -120,7 +121,7 @@ bool Catalog::CatalogManager::DeleteTable(std::string tableName)
 		BMP->SetSize(0, handle);
 		BMP->Delete(handle);
 		BMP->ResetPin(handle);
-		std::string tables = BMP->GetBuffer(tableHandle);
+		std::string tables = BMP->Read(tableHandle);
 		std::istringstream tableStreamIn(tables);
 		std::ostringstream tableStreamOut("");
 		int count;
@@ -148,7 +149,7 @@ bool Catalog::CatalogManager::DeleteTable(std::string tableName)
 
 size_t Catalog::CatalogManager::FindTable(std::string tableName)
 {
-	std::string tables = BMP->GetBuffer(tableHandle);
+	std::string tables = BMP->Read(tableHandle);
 	std::istringstream tableStream(tables);
 	int count;
 	tableStream >> count;
@@ -167,7 +168,7 @@ Common::Table * Catalog::CatalogManager::GetTable(std::string tableName)
 {
 	size_t handle = FindTable(tableName);
 	if (handle == 0) return nullptr;
-	std::string str = BMP->GetBuffer(handle);
+	std::string str = BMP->Read(handle);
 	return StrToTable(str);
 }
 
@@ -226,14 +227,14 @@ int Catalog::CatalogManager::FindIndex(std::string tableName, std::string indexN
 
 void Catalog::CatalogManager::ShowTables()
 {
-	std::cout << BMP->GetBuffer(tableHandle) << std::endl;
+	std::cout << BMP->Read(tableHandle) << std::endl;
 	return;
 }
 
 std::vector<std::string> Catalog::CatalogManager::ShowIndex()
 {
 	std::vector<std::string> result;
-	std::string tables = BMP->GetBuffer(tableHandle);
+	std::string tables = BMP->Read(tableHandle);
 	std::istringstream tableStreamIn(tables);
 	int count;
 	tableStreamIn >> count;
@@ -245,7 +246,7 @@ std::vector<std::string> Catalog::CatalogManager::ShowIndex()
 			size_t temphandle;
 			std::string tempname;
 			tableStreamIn >> tempname >> temphandle;
-			std::string str = BMP->GetBuffer(temphandle);
+			std::string str = BMP->Read(temphandle);
 			Common::Table* temptable = StrToTable(str);
 			for (int j = 0; j <= temptable->attributes.size() - 1; j++)
 			{
