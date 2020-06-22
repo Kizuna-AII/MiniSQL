@@ -24,13 +24,14 @@ private:
 		parsemap["delete"] = 7;
 		parsemap["quit"] = 8;
 		parsemap["execfile"] = 9;
+		parsemap[""] = 10;
 		return;
 	}
 	int Parse_once(istream &fin) {
 		if (fin.peek() == ';')return -1;
 		string comm;
 		fin >> comm;
-		map<string, int>::iterator iter = parsemap.find(comm);
+ 		map<string, int>::iterator iter = parsemap.find(comm);
 		if (iter == parsemap.end()) {//指令错误
 			return -1;
 		}
@@ -174,6 +175,10 @@ public:
 						fin.getline(fname, 30, ';');
 						ifstream tmpin(fname);//打开对应文件
 						Run(tmpin, fout, "exec fin");//递归处理文件读取
+						break;
+					}
+					case 10: {
+						fin.clear();
 						break;
 					}
 					default: {

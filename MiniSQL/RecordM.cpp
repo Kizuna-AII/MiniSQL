@@ -3,7 +3,10 @@
 #include<cstring>
 using namespace std;
 using namespace Common;
-
+namespace API {
+	std::vector<std::string> screenBuffer; //准备输出到屏幕的Buffer。例如，当RecordManager完成查询操作时，把要输出的内容都丢到这里。
+	std::vector<std::string> inputBuffer; //准备从丢给其他模块的Buffer。例如Insert时，把要insert的tuple都塞进去。
+}
 namespace Record{
 
     //选择指定行
@@ -56,8 +59,7 @@ namespace Record{
             int posR=nowpos;
             if(flag){//符合条件
                 //输出到ScreenBuffer
-				//API::screenBuffer.push_back("a");
-				API::screenBuffer.push_back(buffer.substr(posL,posR));
+				API::screenBuffer.push_back(buffer.substr(posL,posR-posL));
             }
             else if(mode==1){//记录需要删除的位置
                 rec.push_back(posL);
@@ -181,7 +183,7 @@ namespace Record{
 		vector<string>& ibuffer = API::inputBuffer;//引用inputbuffer
 		int space;
 		//int tupleLen = table->GetDataSize();
-		for (int i = ibuffer.size()-1; i >= 0; ) {
+		for (int i = ibuffer.size()-1; i >= 0; i--) {
 			space = Buffer::BLOCKCAPACITY - BMP->GetSize(handle);
 			if ((int)ibuffer[i].size() > space)break;
 			//更新索引

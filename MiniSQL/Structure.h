@@ -126,7 +126,7 @@ namespace Common {
 			return;
 		}
 		Tuple(const int _len, const char* src) {
-			this->len = len;
+			this->len = _len;
 			data = new char[this->len];
 			memcpy(data, src, _len);
 			return;
@@ -137,8 +137,14 @@ namespace Common {
 			data = new char[this->len];
 			return;
 		}
+		Tuple(const Tuple &tp) {
+			this->len = tp.len;
+			this->data = new char[this->len];
+			strcpy_s(this->data,this->len, tp.data);
+			return;
+		}
 		~Tuple() {
-			delete[] data;
+			free(data);
 			this->len = 0;
 		}
 	};

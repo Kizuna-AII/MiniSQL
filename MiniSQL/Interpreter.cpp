@@ -14,6 +14,7 @@ void Interpreter::GetString(std::istream &fin, std::string &str) {
 	str.clear();
 	char ch;
 	bool flag = 0;//Óöµ½¿Õ¸ñ½áÊø
+	fin >> noskipws;
 	while (fin.get(ch)) {
 		if (ch == '\n' || ch == '\r')continue;
 		if (ch == '(' || ch == ')') {
@@ -32,17 +33,22 @@ void Interpreter::GetString(std::istream &fin, std::string &str) {
 		str += ch;
 		flag = 1;
 	}
+	fin >> skipws;
 	return;
 }
 
 int Interpreter::PeekEnd(std::istream & fin){
 	char ch;
+	fin >> noskipws;
 	ch = fin.peek();
-	while (ch == ' ') { fin >> ch; ch = fin.peek(); }
+	while (ch == ' ' || ch==')' ) { fin >> ch; ch = fin.peek();}
 	if (ch == EOF || ch == ',' || ch == ';') {
 		fin >> ch;
+		fin.peek();
+		while (ch == '\n' || ch == '\r') { fin >> ch; ch = fin.peek(); }
 		return 1;
 	}
+	fin >> skipws;
 	return 0;
 }
 
@@ -76,6 +82,10 @@ Common::Tuple Interpreter::GetTuple(std::istream & fin,std::string tableName)
 	int offset = 0;
 	for (int i = 0; i < table->attributes.size(); i++) {
 		char ch;
+		if (i > 0) {
+			fin >> ch;
+			while (ch != ',') { fin >> ch;}//Ìø¹ý¶ººÅ
+		}
 		ch = fin.peek();
 		while (ch == ' ' || ch=='(') { fin >> ch; ch = fin.peek(); }//Ìø¹ý¿Õ¸ñºÍ×óÀ¨ºÅ
 		if (table->attributes[i].type == -1) {//float
