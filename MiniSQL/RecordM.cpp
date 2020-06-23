@@ -69,16 +69,20 @@ namespace Record{
     }
 	void RecordManager::AddIndex(Common::Table * table, const char * str,int value){
 		string key;
+		int offset = 0;
 		for (int j = 0; j < table->attributes.size(); j++) {
 			if (table->attributes[j].indexName != "#NULL#") {//index非空时更新
 				if (table->attributes[j].type == -1) {//float
-					key=string(str,sizeof(float));
+					key = to_string(*(float*)(str + offset));
+					offset += sizeof(float);
 				}
 				else if (table->attributes[j].type == 0) {//int
-					key = string(str, sizeof(int));
+					key = to_string(*(int*)(str + offset));
+					offset += sizeof(int);
 				}
 				else {//char
-					key = string(str, (size_t)table->attributes[j].type);
+					key = string(str+offset, (size_t)table->attributes[j].type);
+					offset += table->attributes[j].type;
 				}
 				IDM->setWorkspace(table->name, table->attributes[j].name);
 				IDM->insert(key, value);
@@ -88,17 +92,20 @@ namespace Record{
 	}
 	void RecordManager::RemoveIndex(Common::Table * table, const char * str){
 		string key;
+		int offset = 0;
 		for (int j = 0; j < table->attributes.size(); j++) {
 			if (table->attributes[j].indexName != "#NULL#") {//index非空时更新
-				//setworkspace(table->name,table->attributes[j].name)
 				if (table->attributes[j].type == -1) {//float
-					key = string(str, sizeof(float));
+					key = to_string(*(float*)(str + offset));
+					offset += sizeof(float);
 				}
 				else if (table->attributes[j].type == 0) {//int
-					key = string(str, sizeof(int));
+					key = to_string(*(int*)(str + offset));
+					offset += sizeof(int);
 				}
 				else {//char
-					key = string(str, (size_t)table->attributes[j].type);
+					key = string(str + offset, (size_t)table->attributes[j].type);
+					offset += table->attributes[j].type;
 				}
 				IDM->setWorkspace(table->name, table->attributes[j].name);
 				IDM->remove(key);
@@ -182,13 +189,15 @@ namespace Record{
 		
 		vector<string>& ibuffer = API::inputBuffer;//引用inputbuffer
 		int space;
+		int tupleLen = table->GetDataSize();
 		//int tupleLen = table->GetDataSize();
 		for (int i = ibuffer.size()-1; i >= 0; i--) {
 			space = Buffer::BLOCKCAPACITY - BMP->GetSize(handle);
-			if ((int)ibuffer[i].size() > space)break;
+			if ((int)tupleLen > space)break;
 			//更新索引
 			AddIndex(table, ibuffer[i].c_str(), BMP->GetFileOffset(handle)+BMP->GetSize(handle));
 			//写入数据
+			ibuffer[i].resize(tupleLen, '\000');
 			BMP->Write(ibuffer[i], handle);
 			ibuffer.pop_back();
 		}

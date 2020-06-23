@@ -24,10 +24,14 @@ void Interpreter::GetString(std::istream &fin, std::string &str) {
 			if (!flag) {
 				continue;//忽略前导空格
 			}
-			else return;
+			else {
+				fin >> skipws;
+				return;
+			}
 		}
 		if (ch == ';' || ch==',') {
 			fin.putback(ch);
+			fin >> skipws;
 			return;
 		}
 		str += ch;
@@ -62,13 +66,14 @@ void Interpreter::GetCharValue(std::istream & fin, std::string & str){
 			fin.putback(ch);
 			return;
 		}
+		
 		if (ch == '\"' || ch=='\'') {//检测两端引号
 			if (flag) {
 				return;
 			}
 			flag = 1;
 		}
-		if (flag) {
+		else if (flag) {
 			str += ch;
 		}
 	}
@@ -80,6 +85,7 @@ Common::Tuple Interpreter::GetTuple(std::istream & fin,std::string tableName)
 	Table* table=api->GetTableByName(tableName);
 	Common::Tuple res(*table);//根据表头申请空间
 	int offset = 0;
+	fin >> noskipws;
 	for (int i = 0; i < table->attributes.size(); i++) {
 		char ch;
 		if (i > 0) {
@@ -109,6 +115,7 @@ Common::Tuple Interpreter::GetTuple(std::istream & fin,std::string tableName)
 			offset += str.size();
 		}
 	}
+	fin >> skipws;
 	return res;
 }
 

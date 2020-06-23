@@ -3,6 +3,41 @@
 using namespace std;
 
 
+bool API::Api::CheckUnique(Common::Table* table, Common::Tuple & tuple){
+	int offset = 0;
+	for (int i = 0; i < table->attributes.size(); i++) {
+		if (table->attributes[i].unique || table->attributes[i].primary) {
+			Common::Compares tmp;
+			tmp.attri = table->attributes[i].name;
+			tmp.ctype = Common::CompareType::je;
+			string key="";
+			if (table->attributes[i].type == -1) {//float
+				key = to_string(tuple.Get<float>(offset));
+				offset += sizeof(float);
+			}
+			else if (table->attributes[i].type == 0) {//int
+				key = to_string(tuple.Get<int>(offset));
+				offset += sizeof(int);
+			}
+			else {//char
+				key = tuple.Get(table->attributes[i], offset);
+				offset += table->attributes[i].type;
+			}
+			tmp.value = key;
+			vector<Common::Compares>tmpCmp;
+			tmpCmp.clear();
+			tmpCmp.push_back(tmp);
+			screenBuffer.clear();
+			Select(table->name, &tmpCmp);//Select对应的key
+			if (screenBuffer.size() > 0) {
+				//该key已存在
+				return 0;
+			}
+		}
+	}
+	return 1;//不存在冲突，返回1
+}
+
 API::Api::Api()
 {
 	bufferm = Buffer::BufferManager();
@@ -142,13 +177,14 @@ void API::Api::Select(std::string from, std::vector<Common::Compares>* condition
 	//
 	//找到对应的表
 	Common::Table* table = GetTableByName(from);
-	std::vector<int>offsets;
-	offsets.clear();
-	GetOffsets(offsets, table, conditions);//获取需要读取的块位置
 	string fileName = from + "_rec"; //文件命名为 table_rec
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
+	if (!bufferm.IsExist(handle))return;//文件不存在，直接返回
 	bufferm.SetPin(handle);
+	std::vector<int>offsets;
+	offsets.clear();
+	GetOffsets(offsets, table, conditions);//获取需要读取的块位置	
 	API::screenBuffer.clear();
 	for (int i = 0; i < offsets.size(); i++) {//依次处理每个offset
 		long long tmp = offsets[i];
@@ -172,12 +208,17 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 	cout << tuple.GetString() << endl;
 	//
 	Common::Table* table = GetTableByName(into);//获取table
+	if (CheckUnique(table, tuple) == 0) {
+		throw(record_notfind_error(""));
+		return;
+	}
 	API::inputBuffer.push_back(tuple.GetString());
 	string fileName = into + "_rec"; //文件命名为 table_rec
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	if (!bufferm.IsExist(handle)) {
 		bufferm.SetSize(0,handle);
+		bufferm.Save(handle);
 	}
 	long long offset = 0;
 	bufferm.SetPin(handle);
@@ -284,7 +325,7 @@ void API::Api::OutPutResult(std::string tableName,std::ostream & fout)
 			}
 			else {
 				//char
-				fout << *(char*)(screenBuffer[i].c_str() + offset) << "	";
+				fout << string((char*)(screenBuffer[i].c_str() + offset),table->attributes[j].type) << "	";
 				offset += table->attributes[j].type;
 			}
 		}

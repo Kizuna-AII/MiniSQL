@@ -88,7 +88,7 @@ namespace Common {
 			int res=0;
 			for (auto atr : this->attributes) {
 				if (atr.type > 0) res += atr.type;
-				res += (atr.type == -1) ? (sizeof(float)) : (sizeof(int));
+				else res += (atr.type == -1) ? (sizeof(float)) : (sizeof(int));
 			}
 			return res;
 		}
@@ -122,29 +122,29 @@ namespace Common {
 		//按指定长度初始化tuple的空间
 		Tuple(const int _len) {
 			this->len = len;
-			data = new char[this->len];
+			data = new char[this->len+1];
 			return;
 		}
 		Tuple(const int _len, const char* src) {
 			this->len = _len;
-			data = new char[this->len];
+			data = new char[this->len+1];
 			memcpy(data, src, _len);
 			return;
 		}
 		//传入对应的表头，计算需要的bytes并初始化空间
 		Tuple(Table& tb) {
 			this->len = tb.GetDataSize();
-			data = new char[this->len];
+			data = new char[this->len+1];
 			return;
 		}
 		Tuple(const Tuple &tp) {
 			this->len = tp.len;
-			this->data = new char[this->len];
-			strcpy_s(this->data,this->len, tp.data);
+			this->data = new char[this->len+1];
+			memcpy(this->data, tp.data, this->len);
 			return;
 		}
 		~Tuple() {
-			free(data);
+			delete[](data);
 			this->len = 0;
 		}
 	};

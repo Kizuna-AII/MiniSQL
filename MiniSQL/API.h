@@ -44,6 +44,12 @@ namespace API {
 		table_notfind_error(const std::string _msg) { this->msg = _msg; }
 		virtual std::string what() const { return ("Table " + this->msg + " don't exist!");}
 	};
+	// RECORD_NOTFIND_ERROR : Insert
+	class record_notfind_error : public mexception {
+	public:
+		record_notfind_error(const std::string _msg) { this->msg = _msg; }
+		virtual std::string what() const { return ("Unique key " + this->msg + " exist!"); }
+	};
 	// COLUMN_NOTFIND_ERROR : Create Index
 	class column_notfind_error : public mexception {
 	public:
@@ -70,7 +76,7 @@ namespace API {
 		Catalog::CatalogManager catalogm; // 第一次使用前必须调用Initialization(BufferManager*)
 		Record::RecordManager recordm;
 		Index::IndexManager indexm;
-
+		bool CheckUnique(Common::Table* table, Common::Tuple& tuple);
 	public:
 		//构造函数
 		Api();

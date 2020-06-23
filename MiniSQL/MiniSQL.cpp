@@ -29,6 +29,7 @@ private:
 	}
 	int Parse_once(istream &fin) {
 		if (fin.peek() == ';')return -1;
+		fin >> skipws;
 		string comm;
 		fin >> comm;
  		map<string, int>::iterator iter = parsemap.find(comm);
@@ -50,8 +51,8 @@ public:
 		cout << "miniSQL running" << endl;
 		bool flag = 1;
 		do {
+			int x = Parse_once(fin);
 			try {
-				int x = Parse_once(fin);
 				switch (x) {
 					case 1: {//create
 						switch (Parse_once(fin)) {
