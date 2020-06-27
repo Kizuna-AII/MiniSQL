@@ -17,8 +17,8 @@ void Interpreter::GetString(std::istream &fin, std::string &str) {
 	fin >> noskipws;
 	while (fin.get(ch)) {
 		if (ch == '\n' || ch == '\r')continue;
-		if (ch == '(' || ch == ')') {
-			ch = ' ';//括号视为空格
+		if (ch == '(' || ch == ')' || ch=='\t') {
+			ch = ' ';//括号和制表符视为空格
 		}
 		if (ch == ' ') {
 			if (!flag) {
@@ -45,7 +45,7 @@ int Interpreter::PeekEnd(std::istream & fin){
 	char ch;
 	fin >> noskipws;
 	ch = fin.peek();
-	while (ch == ' ' || ch==')' ) { fin >> ch; ch = fin.peek();}
+	while (ch == ' ' || ch==')' || ch=='\t' ) { fin >> ch; ch = fin.peek();}
 	if (ch == EOF || ch == ',' || ch == ';') {
 		fin >> ch;
 		fin.peek();
