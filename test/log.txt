@@ -1,0 +1,8 @@
+miniSQL running
+DEBUG info DropTable:
+target:student
+Table student don't exist!
+wrong command: 
+wrong command:  Ù–‘∂¡»°¥ÌŒÛ
+wrong command: 
+wrong command: 

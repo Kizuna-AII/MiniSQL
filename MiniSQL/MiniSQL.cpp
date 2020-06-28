@@ -6,8 +6,16 @@
 #include<map>
 #include "API.h"
 #include "Interpreter.h"
+
 using namespace std;
 using namespace API;
+
+#define USEFILECOMMAND (false)
+#define USEFILELOG (false)
+#define WORKPATH (std::string("../test/"))
+#define COMMANDFILENAME (std::string("command.txt"))
+#define LOGFILENAME (std::string("log.txt"))
+
 class miniSQL {
 private:
 	map<string, int>parsemap;
@@ -201,13 +209,26 @@ public:
 
 int main() {
 	/// initialize I/O
-	//freopen("in.txt", "r", stdin);
-	//freopen("out.txt", "w", stdout);
+	FILE * tempStream;
 	std::ios::sync_with_stdio(false);
+	if (USEFILECOMMAND)
+		freopen_s(&tempStream, (WORKPATH + COMMANDFILENAME).c_str(), "r", stdin);
+	if (USEFILELOG)
+		freopen_s(&tempStream, (WORKPATH + LOGFILENAME).c_str(), "w", stdout);
 	/// start
 	miniSQL* tar = new miniSQL();
-	tar->Run(cin, cout, "quit");
-	//
+	tar->Run(std::cin, std::cout, "quit");
+	if (USEFILECOMMAND)
+	{
+		fclose(stdin);
+		freopen_s(&tempStream, "CON", "r", stdin);
+	}
+	if (USEFILELOG)
+	{
+		fclose(stdout);
+		freopen_s(&tempStream, "CON", "w", stdout);
+	}
+	free(tar);
 	return 0;
 }
 
