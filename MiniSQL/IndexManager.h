@@ -27,6 +27,7 @@ namespace Index{
 		void mergeNode(Node _a, Node _b);
 		void updateAncIndex(Node _n, std::string _old, std::string _new);
 		void rebuild();
+		std::string getIndexFileName(const std::string & tablename);
 	public:
 		static Buffer::BufferManager *BM;
 		Node readNodeFromDisk(int loc);

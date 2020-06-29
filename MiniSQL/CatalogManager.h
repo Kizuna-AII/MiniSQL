@@ -7,6 +7,7 @@
 
 namespace Catalog
 {
+	const std::string CATALOGWORKPATH = std::string(WORKPATH) + "Catalog/";
 	// Table转换至string的函数
 	std::string TableToStr(Common::Table* table);
 	// string转换至Table的函数

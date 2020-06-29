@@ -38,6 +38,7 @@ bool API::Api::CheckUnique(Common::Table* table, Common::Tuple & tuple){
 	return 1;//不存在冲突，返回1
 }
 
+
 API::Api::Api()
 {
 	bufferm = Buffer::BufferManager();
@@ -63,7 +64,7 @@ Common::Tuple * API::Api::GetOneTuple(Common::Table * table, int offset)
 {
 	int tupleLen = table->GetDataSize();
 	
-	string fileName = table->name + "_rec"; //文件命名为 table_rec
+	string fileName = Record::RecordManager::GetRecordFileName(table->name); //文件命名为 table_rec
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	bufferm.SetPin(handle);
@@ -88,7 +89,7 @@ Common::Tuple * API::Api::GetOneTuple(Common::Table * table, int offset)
 void API::Api::GetOffsets(std::vector<int>&offsets,Common::Table * table, std::vector<Common::Compares>* conditions)
 {
 	// 初始化result，包括文件所有的块
-	string fileName = table->name + "_rec";
+	string fileName = Record::RecordManager::GetRecordFileName(table->name);
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	int len = bufferm.GetFileSize(handle);
@@ -177,7 +178,7 @@ void API::Api::Select(std::string from, std::vector<Common::Compares>* condition
 	//
 	//找到对应的表
 	Common::Table* table = GetTableByName(from);
-	string fileName = from + "_rec"; //文件命名为 table_rec
+	string fileName = Record::RecordManager::GetRecordFileName(from);; //文件命名为 table_rec
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	if (!bufferm.IsExist(handle))return;//文件不存在，直接返回
@@ -213,7 +214,7 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 		return;
 	}
 	API::inputBuffer.push_back(tuple.GetString());
-	string fileName = into + "_rec"; //文件命名为 table_rec
+	string fileName = Record::RecordManager::GetRecordFileName(into);; //文件命名为 table_rec
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	if (!bufferm.IsExist(handle)) {
@@ -251,7 +252,7 @@ void API::Api::Delete(std::string from, std::vector<Common::Compares>* condition
 	std::vector<int>offsets;
 	offsets.clear();
 	GetOffsets(offsets, table, conditions);//获取需要读取的块位置
-	string fileName = from + "_rec"; //文件命名为 table_rec
+	string fileName = Record::RecordManager::GetRecordFileName(from);; //文件命名为 table_rec
 	int handle = bufferm.NewPage();
 	bufferm.SetFilename(fileName, handle);
 	bufferm.SetPin(handle);
@@ -301,6 +302,10 @@ void API::Api::DropTable(std::string target)
 	bool deleteTable = catalogm.DeleteTable(target);
 	if (deleteTable == false)
 		throw(table_notfind_error(target));
+	// record manager delete table
+	bufferm.NewPage();
+	bufferm.SetFilename(Record::RecordManager::GetRecordFileName(target));
+	bufferm.Delete();
 }
 
 void API::Api::OutPutResult(std::string tableName,std::ostream & fout)
@@ -314,14 +319,14 @@ void API::Api::OutPutResult(std::string tableName,std::ostream & fout)
 		offset = 0;
 		for (int j = 0; j < table->attributes.size(); j++) {//对于一行，依次输出各列值
 			if (table->attributes[j].type == -1) {
-				//int
+				//float
 				fout << *(float*)(screenBuffer[i].c_str() + offset) << "	";
 				offset += sizeof(float);
 			}
 			else if (table->attributes[j].type == 0) {
 				fout << *(int*)(screenBuffer[i].c_str() + offset) << "	";
 				offset += sizeof(int);
-				//float
+				//int
 			}
 			else {
 				//char

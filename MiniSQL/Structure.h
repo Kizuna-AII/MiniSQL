@@ -14,6 +14,8 @@ constexpr auto min(T a, T b) { return ((a) < (b) ? (a) : (b)); }
 template<typename T>
 constexpr auto max(T a, T b) { return ((a) > (b) ? (a) : (b)); }
 
+const std::string WORKPATH = "../DataFiles/";
+
 //通用的数据结构头文件，任何模块都可以从这里拿取数据结构
 namespace Buffer {
 	/*
@@ -168,6 +170,7 @@ namespace Catalog {
 namespace API {
 	extern std::vector<std::string> screenBuffer; //准备输出到屏幕的Buffer。例如，当RecordManager完成查询操作时，把要输出的内容都丢到这里。
 	extern std::vector<std::string> inputBuffer; //准备从丢给其他模块的Buffer。例如Insert时，把要insert的tuple都塞进去。
+
 	//定义塞到RecordM.cpp了
 }
 

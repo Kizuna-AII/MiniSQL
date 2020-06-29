@@ -9,6 +9,8 @@
 #include "IndexManager.h"
 namespace API {
 	//Exceptions
+
+
 	class mexception{
 	protected:
 		std::string msg;
@@ -77,6 +79,7 @@ namespace API {
 		Record::RecordManager recordm;
 		Index::IndexManager indexm;
 		bool CheckUnique(Common::Table* table, Common::Tuple& tuple);
+
 	public:
 		//构造函数
 		Api();
@@ -104,5 +107,7 @@ namespace API {
 		void DropTable(std::string target);
 		//输出ScreenBuffer中的内容
 		void OutPutResult(std::string tableName, std::ostream & fout);
+
+		
 	};
 }

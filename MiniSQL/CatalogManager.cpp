@@ -35,7 +35,7 @@ void Catalog::CatalogManager::Initialization(Buffer::BufferManager * target)
 	this->tableHandle = BMP->NewPage();
 	if (this->tableHandle == 0)
 		this->tableHandle = BMP->NewPage();
-	BMP->SetFilename("../test/catalog/#base#.txt", this->tableHandle);
+	BMP->SetFilename(CATALOGWORKPATH + "#base#.txt", this->tableHandle);
 	BMP->SetPin(tableHandle);
 	if (!BMP->IsExist(this->tableHandle))
 	{
@@ -61,7 +61,7 @@ void Catalog::CatalogManager::Initialization(Buffer::BufferManager * target)
 			if (temphandle == 0)
 				temphandle = BMP->NewPage();
 			BMP->SetPin(temphandle);
-			BMP->SetFilename("../test/catalog/" + tempname + ".txt", temphandle);
+			BMP->SetFilename(CATALOGWORKPATH + tempname + ".txt", temphandle);
 			BMP->Load(temphandle);
 			tableStreamOut << tempname << " " << temphandle << " ";
 		}
@@ -85,7 +85,7 @@ size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 		BMP->SetPin(handle);
 		std::string str = TableToStr(tableName);
 		BMP->Write(str, handle);
-		BMP->SetFilename("../test/catalog/" + tableName->name + ".txt", handle);
+		BMP->SetFilename(CATALOGWORKPATH + tableName->name + ".txt", handle);
 		BMP->Save(handle);
 		std::cout << str << std::endl;
 		std::string tables = BMP->Read(this->tableHandle);

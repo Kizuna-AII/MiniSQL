@@ -1,1 +1,0 @@
-student 4 sno #NULL# 9 0 1 sname #NULL# 17 1 0 sage #NULL# 0 0 0 sgender #NULL# 2 0 0 

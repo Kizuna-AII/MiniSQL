@@ -87,7 +87,7 @@ Index::Node::Node(int _id){
 Index::Node Index::Tree::readNodeFromDisk(int loc){
 	if(loc == -1) return Node();
 	BM->NewPage();
-	BM->SetFilename("../test/" + name + ".index");
+	BM->SetFilename(getIndexFileName(name));
 	BM->SetFileOffset(loc * Buffer::BLOCKCAPACITY);
 	BM->Load();
 	return Node(BM->Read());
@@ -96,7 +96,7 @@ Index::Node Index::Tree::readNodeFromDisk(int loc){
 void Index::Tree::writeNodeToDisk(Node _n){
 	BM->NewPage();
 	BM->Write(_n);
-	BM->SetFilename("../test/" + name + ".index");
+	BM->SetFilename(getIndexFileName(name));
 	BM->SetFileOffset(_n.id * Buffer::BLOCKCAPACITY);
 	BM->Save();
 }
@@ -195,6 +195,11 @@ void Index::Tree::rebuild(){
 	}
 }
 
+std::string Index::Tree::getIndexFileName(const std::string & tablename)
+{
+	return "../DataFiles/Index/" + name + ".index";
+}
+
 Index::Node Index::Tree::findNode(std::string _key){
 	Node node = readNodeFromDisk(root);
 	while(!node.isLeaf){// until this is a leaf node, do:
@@ -263,7 +268,7 @@ Index::Tree::Tree(std::string _name, int _datawidth){
 	degree = (Buffer::BLOCKCAPACITY - 2*10) / (_datawidth + 10) - 1;
 	// 10: bytes per Node id
 	BM->NewPage();
-	BM->SetFilename("../test/" + name + ".index");
+	BM->SetFilename(getIndexFileName(name));
 	size = 0;
 	if(BM->IsExist()){
 		// load this index from disk
@@ -289,7 +294,7 @@ Index::Tree::Tree(){
 
 void Index::Tree::destroy(){
 	BM->NewPage();
-	BM->SetFilename("../test/" + name + ".index");
+	BM->SetFilename(getIndexFileName(name));
 	BM->Delete();
 }
 

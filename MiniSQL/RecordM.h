@@ -17,6 +17,8 @@ namespace Record{
 		void AddIndex(Common::Table* table, const char* str, int value);
 		void RemoveIndex(Common::Table* table, const char* str);
 	public:
+		//获得record filename
+		static std::string GetRecordFileName(const std::string & tablename);
 		//指定RecordManager使用的BufferManager
 		void LinkBufferManager(Buffer::BufferManager* target) {
 			BMP = target;

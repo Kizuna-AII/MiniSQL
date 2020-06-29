@@ -113,6 +113,10 @@ namespace Record{
 		}
 		return;
 	}
+	std::string RecordManager::GetRecordFileName(const std::string & tablename)
+	{
+		return "../DataFiles/Record/" + tablename + "_rec";
+	}
 	void RecordManager::ClearDelRec(){
 		this->rec.clear();
 		return;
@@ -126,7 +130,7 @@ namespace Record{
         return;
     }
 	void RecordManager::FillBlanks(Common::Table * table){
-		string fileName = table->name + "_rec"; //文件命名为 table_rec
+		string fileName = Record::RecordManager::GetRecordFileName(table->name); //文件命名为 table_rec
 		int handle = BMP->NewPage();
 		int endHandle = BMP->NewPage();
 		BMP->SetFilename(fileName, handle);

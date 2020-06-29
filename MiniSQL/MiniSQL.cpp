@@ -12,7 +12,7 @@ using namespace API;
 
 #define USEFILECOMMAND (true)
 #define USEFILELOG (false)
-#define WORKPATH (std::string("../test/"))
+#define TESTPATH (std::string("../test/"))
 #define LOGFILENAME (std::string("log.txt"))
 
 std::string COMMANDFILENAME("command.txt");
@@ -219,9 +219,13 @@ int main(int argc, char **argv) {
 	FILE * tempStream;
 	std::ios::sync_with_stdio(false);
 	if (USEFILECOMMAND)
-		freopen_s(&tempStream, (WORKPATH + COMMANDFILENAME).c_str(), "r", stdin);
+	{
+		freopen_s(&tempStream, (TESTPATH + COMMANDFILENAME).c_str(), "r", stdin);
+		std::cout << "Ues File Command (Filename = " << (TESTPATH + COMMANDFILENAME).c_str() << ")" << std::endl;
+	}
+
 	if (USEFILELOG)
-		freopen_s(&tempStream, (WORKPATH + LOGFILENAME).c_str(), "w", stdout);
+		freopen_s(&tempStream, (TESTPATH + LOGFILENAME).c_str(), "w", stdout);
 	/// start
 	miniSQL* tar = new miniSQL();
 	tar->Run(std::cin, std::cout, "quit");
