@@ -6,17 +6,8 @@ create table student(
 	sgender char(1),
 	primary key(sno)
 );
-create index snameindex on student(sname);
 
-insert into student values('10000000','ajlcdepdjxpftjug',21,'F');
-insert into student values('10000001','ixivwtjejsy',20,'M');
-insert into student values('10000002','wmeqqtxw',18,'M');
-insert into student values('10000003','wfkzzygnwossi',18,'F');
-insert into student values('10000004','nypahyzrpyrisp',19,'F');
-insert into student values('10000005','yqzwcza',21,'F');
-insert into student values('10000006','mwkmvveyrdq',18,'M');
-insert into student values('10000007','rwmlirx',20,'M');
-insert into student values('10000008','ybtndguutftmpwg',19,'M');
-insert into student values('10000009','xajwgueat',21,'F');
+insert into student values('10000000','bjgzkygg',21,'F');
+insert into student values('10000001','cpziizcgttgooum',18,'F');
 select * from student;
 quit
