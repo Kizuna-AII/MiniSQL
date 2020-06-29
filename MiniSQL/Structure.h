@@ -26,7 +26,7 @@ namespace Buffer {
 	4.	提供缓冲区页的pin功能，及锁定缓冲区的页，不允许替换出去
 	为提高磁盘I/O操作的效率，缓冲区与文件系统交互的单位是块，块的大小应为文件系统与磁盘交互单位的整数倍，一般可定为4KB或8KB。
 	*/
-	constexpr int BLOCKNUM = 8; //块的数量
+	constexpr int BLOCKNUM = 24; //块的数量
 	constexpr int BLOCKCAPACITY = 4096; //块的大小
 	//
 }

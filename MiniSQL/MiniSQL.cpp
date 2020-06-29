@@ -11,11 +11,13 @@ using namespace std;
 using namespace API;
 
 #define USEFILECOMMAND (true)
-#define USEFILELOG (false)
+#define USEFILELOG (true)
 #define TESTPATH (std::string("../test/"))
 #define LOGFILENAME (std::string("log.txt"))
 
-std::string COMMANDFILENAME("command.txt");
+const std::string DEFAULTCOMMANDFILENAME("command.txt");
+
+std::string COMMANDFILENAME(DEFAULTCOMMANDFILENAME);
 
 class miniSQL
 {
@@ -203,6 +205,13 @@ public:
 				cout << ex.what() << endl;
 				//cout << "wtf" << endl;
 			}
+			if (USEFILELOG)
+			{
+				FILE * tempStream;
+				fclose(stdout);
+				freopen_s(&tempStream, (TESTPATH + LOGFILENAME).c_str(), "a", stdout);
+			}
+
 		} while (flag);
 		cout << finflag << endl;
 		return;
