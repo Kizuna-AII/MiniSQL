@@ -332,7 +332,7 @@ std::set<int> Index::IndexManager::select(Common::Compares _con){
 	int loc = node.findKeyLoc(_con.value) - 1;
 
 	auto blockCeil = [](int offset)->int{
-		return offset / Buffer::BLOCKCAPACITY * Buffer::BLOCKCAPACITY;
+		return offset / Tree::BM->tmpBufferSize * Tree::BM->tmpBufferSize;
 	};
 
 	if(_con.ctype == Common::CompareType::je){

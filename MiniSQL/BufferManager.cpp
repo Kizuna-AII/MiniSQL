@@ -54,6 +54,7 @@ size_t Buffer::BufferManager::GetFreeIndex() const throw(const char *)
 Buffer::BufferManager::BufferManager() noexcept
 {
 	handleCount = 0;
+	tmpBufferSize = BLOCKCAPACITY;
 	for (size_t i = 0; i < BLOCKNUM; i++)
 	{
 		buffer[i] = nullptr;

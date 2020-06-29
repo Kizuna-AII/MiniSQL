@@ -10,8 +10,8 @@
 using namespace std;
 using namespace API;
 
-#define USEFILECOMMAND (true)
-#define USEFILELOG (true)
+#define USEFILECOMMAND (false)
+#define USEFILELOG (false)
 #define TESTPATH (std::string("../test/"))
 #define LOGFILENAME (std::string("log.txt"))
 

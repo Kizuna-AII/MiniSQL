@@ -29,6 +29,7 @@ namespace Buffer
 #ifdef TEST
 	public:
 #endif
+		int tmpBufferSize;
 		BlockNodeP buffer[BLOCKNUM];
 		size_t handleCount; // handle计数器，保证handle两两不同
 		std::map<int, int> handleIndexMap; // handle到Index的map

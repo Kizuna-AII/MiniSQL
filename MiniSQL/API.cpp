@@ -94,7 +94,7 @@ void API::Api::GetOffsets(std::vector<int>&offsets,Common::Table * table, std::v
 	bufferm.SetFilename(fileName, handle);
 	int len = bufferm.GetFileSize(handle);
 	std::set<int> result;
-	for(int i = 0; i < len; i += Buffer::BLOCKCAPACITY)
+	for(int i = 0; i < len; i += bufferm.tmpBufferSize)
 		result.insert(i);
 	if (conditions != NULL) {
 
@@ -185,7 +185,12 @@ void API::Api::Select(std::string from, std::vector<Common::Compares>* condition
 	bufferm.SetPin(handle);
 	std::vector<int>offsets;
 	offsets.clear();
+	//fix
+	int tupleLen = table->GetDataSize();
+	bufferm.tmpBufferSize = Buffer::BLOCKCAPACITY / tupleLen * tupleLen;
+	//
 	GetOffsets(offsets, table, conditions);//获取需要读取的块位置	
+	bufferm.tmpBufferSize = Buffer::BLOCKCAPACITY;
 	API::screenBuffer.clear();
 	for (int i = 0; i < offsets.size(); i++) {//依次处理每个offset
 		long long tmp = offsets[i];
