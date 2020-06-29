@@ -110,7 +110,7 @@ Common::Tuple Interpreter::GetTuple(std::istream & fin,std::string tableName)
 		else if (table->attributes[i].type > 0) {//char
 			string str;
 			this->GetCharValue(fin, str);
-			str.resize(table->attributes[i].type, 0);//长度不足时填充
+			//str.resize(table->attributes[i].type, 0);//长度不足时填充
 			res.Set(offset, str);
 			offset += str.size();
 		}

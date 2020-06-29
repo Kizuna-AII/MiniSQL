@@ -113,7 +113,7 @@ namespace Common {
 		}
 		template<>
 		void Set(int offset, std::string str) {//设置string
-			memcpy(this->data, str.c_str(), str.length());
+			memcpy(this->data+offset, str.c_str(), str.length());
 		}
 		//以std::string形式返回tuple内容
 		std::string GetString() {
