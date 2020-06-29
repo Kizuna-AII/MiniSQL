@@ -1,7 +1,7 @@
 #include "API.h"
 #include<algorithm>
 using namespace std;
-
+#define DEBUGINFO false
 
 bool API::Api::CheckUnique(Common::Table* table, Common::Tuple & tuple){
 	int offset = 0;
@@ -44,11 +44,16 @@ API::Api::Api()
 	bufferm = Buffer::BufferManager();
 	catalogm = Catalog::CatalogManager();
 	catalogm.Initialization(&bufferm);
-	indexm = Index::IndexManager();
-	indexm.linkBufferManager(&bufferm);
 	recordm = Record::RecordManager();
 	recordm.LinkBufferManager(&bufferm);
 	recordm.LinkIndex(&indexm);
+	indexm = Index::IndexManager();
+	indexm.linkBufferManager(&bufferm);
+	vector<std::string> indices = catalogm.ShowIndex();
+	for(auto i: indices){
+		indexm.setWorkspace(i);
+		indexm.createIndex();
+	}
 	return;
 }
 
@@ -97,8 +102,6 @@ void API::Api::GetOffsets(std::vector<int>&offsets,Common::Table * table, std::v
 	for(int i = 0; i < len; i += Buffer::BLOCKCAPACITY)
 		result.insert(i);
 	if (conditions != NULL) {
-
-
 		// 选出所有在有index的列上的条件
 		std::vector<Common::Compares> conditionsOnIndex;
 		for (auto con : *conditions) {
@@ -125,12 +128,14 @@ void API::Api::GetOffsets(std::vector<int>&offsets,Common::Table * table, std::v
 void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>& attributes)
 {
 	//Debug
-	cout << "DEBUG info:" << endl;
-	cout << "table:"<<tableName << endl;
-	cout << "attri:" << endl;
-	for (int i = 0; i < attributes.size(); i++) {
-		cout << attributes[i].name << " type: " << attributes[i].type <<"  primary:"<<attributes[i].primary<<"  uni:"<<attributes[i].unique;
-		cout << endl;
+	if(DEBUGINFO){
+		cout << "DEBUG info:" << endl;
+		cout << "table:"<<tableName << endl;
+		cout << "attri:" << endl;
+		for (int i = 0; i < attributes.size(); i++) {
+			cout << attributes[i].name << " type: " << attributes[i].type <<"  primary:"<<attributes[i].primary<<"  uni:"<<attributes[i].unique;
+			cout << endl;
+		}
 	}
 
 	Common::Table* newTable = new Common::Table();
@@ -145,11 +150,13 @@ void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>
 
 void API::Api::CreateIndex(std::string indexName, std::string on, std::string attri)
 {
-	//DEBUG
-	cout << "DEBUG info:" << endl;
-	cout << "index name:" << indexName << endl;
-	cout << "table:" << on << endl;
-	cout << "attri:" << attri <<endl;
+	if(DEBUGINFO){
+		//DEBUG
+		cout << "DEBUG info:" << endl;
+		cout << "index name:" << indexName << endl;
+		cout << "table:" << on << endl;
+		cout << "attri:" << attri <<endl;
+	}
 	//DEBUG
 	int result = catalogm.CreateIndex(on, attri, indexName);
 	if (result == 0)
@@ -159,20 +166,30 @@ void API::Api::CreateIndex(std::string indexName, std::string on, std::string at
 	if (result == -2)
 		throw(index_exist_error(indexName));
 	// catalog manager create index success
+	
+	Common::Table* table = GetTableByName(on);
+	int datawidth = 10;
+	for(auto i: table->attributes){
+		if(i.name == attri){
+			if(i.type <=0 ) datawidth = 10;
+			else datawidth = i.type + 1;
+		}
+	}
 	indexm.setWorkspace(on, attri);
-	indexm.createIndex();
-	// throw(not_completed_exception());
+	indexm.createIndex(datawidth);
 }
 
 void API::Api::Select(std::string from, std::vector<Common::Compares>* conditions)
 {
-	//DEBUG
-	cout << "DEBUG info Select:" << endl;
-	cout << "from :" << from << endl;
-	cout << "conditions:" <<endl;
-	if (conditions != NULL) {
-		for (int i = 0; i < conditions->size(); i++) {
-			cout << (*conditions)[i].attri << "	" << (int)(*conditions)[i].ctype << "	" << (*conditions)[i].value << endl;
+	if(DEBUGINFO){
+		//DEBUG
+		cout << "DEBUG info Select:" << endl;
+		cout << "from :" << from << endl;
+		cout << "conditions:" <<endl;
+		if (conditions != NULL) {
+			for (int i = 0; i < conditions->size(); i++) {
+				cout << (*conditions)[i].attri << "	" << (int)(*conditions)[i].ctype << "	" << (*conditions)[i].value << endl;
+			}
 		}
 	}
 	//
@@ -202,11 +219,13 @@ void API::Api::Select(std::string from, std::vector<Common::Compares>* condition
 
 void API::Api::Insert(Common::Tuple & tuple, std::string into)
 {
+	if(DEBUGINFO){
 	//DEBUG
-	cout << "DEBUG info Insert:" << endl;
-	cout << "into:" << into <<endl;
-	cout << "values:" << endl;
-	cout << tuple.GetString() << endl;
+		cout << "DEBUG info Insert:" << endl;
+		cout << "into:" << into <<endl;
+		cout << "values:" << endl;
+		cout << tuple.GetString() << endl;
+	}
 	//
 	Common::Table* table = GetTableByName(into);//获取table
 	if (CheckUnique(table, tuple) == 0) {
@@ -240,12 +259,14 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 
 void API::Api::Delete(std::string from, std::vector<Common::Compares>* conditions)
 {
-	//DEBUG
-	cout << "DEBUG info Detete:" << endl;
-	cout << "from :" << from << endl;
-	cout << "conditions:" << endl;
-	for (int i = 0; i < conditions->size(); i++) {
-		cout << (*conditions)[i].attri << "	" << (int)(*conditions)[i].ctype << "	" << (*conditions)[i].value << endl;
+	if(DEBUGINFO){
+		//DEBUG
+		cout << "DEBUG info Detete:" << endl;
+		cout << "from :" << from << endl;
+		cout << "conditions:" << endl;
+		for (int i = 0; i < conditions->size(); i++) {
+			cout << (*conditions)[i].attri << "	" << (int)(*conditions)[i].ctype << "	" << (*conditions)[i].value << endl;
+		}
 	}
 	//
 	Common::Table* table = GetTableByName(from);//获取表头
@@ -272,9 +293,11 @@ void API::Api::Delete(std::string from, std::vector<Common::Compares>* condition
 
 void API::Api::DropIndex(std::string target, std::string from)
 {
-	//DEBUG
-	cout << "DEBUG info dropindex:" << endl;
-	cout << "index:" << target << "	" << "from:" << from << endl;
+	if(DEBUGINFO){
+		//DEBUG
+		cout << "DEBUG info dropindex:" << endl;
+		cout << "index:" << target << "	" << "from:" << from << endl;
+	}
 	//
 	std::string indexName = catalogm.DeleteIndex(from, target);
 	if (indexName == Catalog::noIndex)
@@ -286,9 +309,11 @@ void API::Api::DropIndex(std::string target, std::string from)
 
 void API::Api::DropTable(std::string target)
 {
-	//DEBUG
-	cout << "DEBUG info DropTable:" << endl;
-	cout << "target:"<<target << endl;
+	if(DEBUGINFO){
+		//DEBUG
+		cout << "DEBUG info DropTable:" << endl;
+		cout << "target:"<<target << endl;
+	}
 
 	// index manager 对所有是index的列删除对应的B+树
 	Common::Table* table = GetTableByName(target);//获取table

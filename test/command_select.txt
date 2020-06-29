@@ -1,0 +1,11 @@
+drop table test;
+create table test(
+	a int,
+	b int
+);
+create index testindex on test(a);
+insert into test values(1, 999);
+insert into test values(2, 964);
+insert into test values(3, 233);
+insert into test values(4, 888);
+select * from test where a > 1 and a <= 3;
