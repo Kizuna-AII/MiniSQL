@@ -330,6 +330,7 @@ void API::Api::OutPutResult(std::string tableName,std::ostream & fout)
 			}
 			else {
 				//char
+				//fout << (char*)(screenBuffer[i].c_str() + offset) << "	";
 				fout << string((char*)(screenBuffer[i].c_str() + offset),table->attributes[j].type) << "	";
 				offset += table->attributes[j].type;
 			}
