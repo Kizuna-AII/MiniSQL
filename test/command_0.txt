@@ -7,7 +7,7 @@ create table student(
 	primary key(sno)
 );
 
-insert into student values('10000000','gtacmwjivoovsv',21,'F');
-insert into student values('10000001','wajbclibzpufz',18,'F');
+insert into student values('10000000','ecvgjbssbclabrp',18,'F');
+insert into student values('10000001','unvxpuwmlgzmfam',18,'F');
 select * from student;
 quit
