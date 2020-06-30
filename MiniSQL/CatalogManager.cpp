@@ -87,7 +87,7 @@ size_t Catalog::CatalogManager::CreateTable(Common::Table * tableName)
 		BMP->Write(str, handle);
 		BMP->SetFilename(CATALOGWORKPATH + tableName->name + ".txt", handle);
 		BMP->Save(handle);
-		std::cout << str << std::endl;
+		//std::cout << str << std::endl;
 		std::string tables = BMP->Read(this->tableHandle);
 		std::istringstream tableStreamIn(tables);
 		std::ostringstream tableStreamOut("");

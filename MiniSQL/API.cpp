@@ -243,7 +243,6 @@ void API::Api::Insert(Common::Tuple & tuple, std::string into)
 	Common::Table* table = GetTableByName(into);//获取table
 	if (CheckUnique(table, tuple) == 0) {
 		throw(record_notfind_error(""));
-		return;
 	}
 	API::inputBuffer.push_back(tuple.GetString());
 	string fileName = Record::RecordManager::GetRecordFileName(into);; //文件命名为 table_rec

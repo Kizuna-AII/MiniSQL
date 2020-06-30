@@ -7,7 +7,7 @@ create table student_0(
 	primary key(sno)
 );
 create index snameindex on student_0(sname);
-insert into student_0 values('10000000','fqfmwwwyskrtz',21,'M');
+insert into student_0 values('10000000','rgepmokmvmw',19,'M');
 
 drop table student_1;
 create table student_1(
@@ -18,7 +18,7 @@ create table student_1(
 	primary key(sno)
 );
 create index snameindex on student_1(sname);
-insert into student_1 values('10000001','hsywpwgsan',20,'F');
+insert into student_1 values('10000001','cqweoevxelh',18,'F');
 
 drop table student_2;
 create table student_2(
@@ -29,7 +29,7 @@ create table student_2(
 	primary key(sno)
 );
 create index snameindex on student_2(sname);
-insert into student_2 values('10000002','xtbrtag',22,'F');
+insert into student_2 values('10000002','ftpuabptk',19,'F');
 
 drop table student_3;
 create table student_3(
@@ -40,7 +40,7 @@ create table student_3(
 	primary key(sno)
 );
 create index snameindex on student_3(sname);
-insert into student_3 values('10000003','fuaknvxdqgrykrg',21,'F');
+insert into student_3 values('10000003','wgimaeevgzhspz',18,'M');
 
 drop table student_4;
 create table student_4(
@@ -51,7 +51,7 @@ create table student_4(
 	primary key(sno)
 );
 create index snameindex on student_4(sname);
-insert into student_4 values('10000004','iohbyohndxqodnga',18,'F');
+insert into student_4 values('10000004','wdhvcjb',20,'M');
 
 drop table student_5;
 create table student_5(
@@ -62,7 +62,7 @@ create table student_5(
 	primary key(sno)
 );
 create index snameindex on student_5(sname);
-insert into student_5 values('10000005','rwwomobuyjnp',20,'F');
+insert into student_5 values('10000005','ucuaqnk',22,'M');
 
 drop table student_6;
 create table student_6(
@@ -73,7 +73,7 @@ create table student_6(
 	primary key(sno)
 );
 create index snameindex on student_6(sname);
-insert into student_6 values('10000006','iuwvspjfto',20,'M');
+insert into student_6 values('10000006','qvbmsjrjjqsoks',20,'M');
 
 drop table student_7;
 create table student_7(
@@ -84,7 +84,7 @@ create table student_7(
 	primary key(sno)
 );
 create index snameindex on student_7(sname);
-insert into student_7 values('10000007','hgdfdxlqhqsrnivx',18,'M');
+insert into student_7 values('10000007','rtsmzowmcps',21,'F');
 
 drop table student_8;
 create table student_8(
@@ -95,7 +95,7 @@ create table student_8(
 	primary key(sno)
 );
 create index snameindex on student_8(sname);
-insert into student_8 values('10000008','fbibizbyl',19,'M');
+insert into student_8 values('10000008','oxpthuveanhgxfo',22,'M');
 
 drop table student_9;
 create table student_9(
@@ -106,7 +106,7 @@ create table student_9(
 	primary key(sno)
 );
 create index snameindex on student_9(sname);
-insert into student_9 values('10000009','akyrqqyxsbds',22,'M');
+insert into student_9 values('10000009','slqurznioeopeflb',22,'F');
 
 
 quit;

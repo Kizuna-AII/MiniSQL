@@ -184,9 +184,18 @@ public:
 					break;
 				}
 				case 9: {//exec
-					char fname[30];
+					char fname[30], ch;
+					while (fin.get(ch))
+						if (ch != ' ' && ch != '\t')
+						{
+							fin.putback(ch);
+							break;
+						}
 					fin.getline(fname, 30, ';');
+					std::cout << "fname = " << fname << "!" << std::endl;
 					ifstream tmpin(fname);//打开对应文件
+					if (!tmpin) // 打开失败
+						throw(wrong_command_error("No Such Command File"));
 					Run(tmpin, fout, "exec fin");//递归处理文件读取
 					break;
 				}
@@ -200,6 +209,7 @@ public:
 					break;
 				}
 				}
+				std::cout << "Command Success!" << std::endl;
 			}
 			catch (mexception &ex) {
 				cout << ex.what() << endl;
