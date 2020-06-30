@@ -136,7 +136,7 @@ std::vector<Common::Compares> Interpreter::GetConditions(std::istream & fin)
 		else if (temp == ">=") {
 			tmpCmp.ctype = CompareType::jae;
 		}
-		else if (temp == "==") {
+		else if (temp == "=") {
 			tmpCmp.ctype = CompareType::je;
 		}
 		else if (temp == "!=") {
@@ -152,9 +152,9 @@ std::vector<Common::Compares> Interpreter::GetConditions(std::istream & fin)
 			throw(API::wrong_command_error("wrong symbols"));
 		}
 		this->GetString(fin, temp);
+		if (temp[0] == '\'')temp.erase(0,1);//如果是字符串，消除首尾引号
+		if (temp[temp.length() - 1] == '\'')temp.erase(temp.length() - 1,1);
 		tmpCmp.value = temp;
-		if (temp[0] == '\'')temp.erase(0);//如果是字符串，消除首尾引号
-		if (temp[temp.length() - 1] == '\'')temp.erase(temp.length() - 1);
 		res.push_back(tmpCmp);
 		this->GetString(fin, temp);//检查条件是否结束
 		if (temp == "and") {
