@@ -133,7 +133,7 @@ void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>
 		cout << "table:"<<tableName << endl;
 		cout << "attri:" << endl;
 		for (int i = 0; i < attributes.size(); i++) {
-			cout << attributes[i].name << " type: " << attributes[i].type <<"  primary:"<<attributes[i].primary<<"  uni:"<<attributes[i].unique;
+			cout << attributes[i].name << " type: " << attributes[i].type << "  primary:" << attributes[i].primary << "  uni:" << attributes[i].unique;
 			cout << endl;
 		}
 	}
@@ -145,6 +145,14 @@ void API::Api::CreateTable(std::string tableName, std::vector<Common::Attribute>
 	delete newTable;
 	if (newhandle == 0)
 		throw(table_exist_error(tableName));
+
+	for (auto i : attributes)
+	{
+		if (i.primary) // 对主键创建index
+		{
+			CreateIndex(tableName + "#" + i.name, tableName, i.name);
+		}
+	}
 	return;
 }
 

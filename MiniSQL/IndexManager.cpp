@@ -302,7 +302,6 @@ void Index::Tree::destroy(){
 	BM->NewPage();
 	BM->SetFilename(getIndexFileName(name));
 	BM->Delete();
-	std::cout << "name = " << name << std::endl;
 }
 
 void Index::IndexManager::setWorkspace(std::string _table_attr){

@@ -132,10 +132,11 @@ namespace Record{
 	void RecordManager::FillBlanks(Common::Table * table){
 		string fileName = Record::RecordManager::GetRecordFileName(table->name); //文件命名为 table_rec
 		int handle = BMP->NewPage();
-		int endHandle = BMP->NewPage();
-		BMP->SetFilename(fileName, handle);
 		BMP->SetPin(handle);
+		int endHandle = BMP->NewPage();
 		BMP->SetPin(endHandle);
+		BMP->SetFilename(fileName, handle);
+		BMP->SetFilename(fileName, endHandle);
 		long long last = rec[0];
 		BMP->SetFileOffset(last,handle);
 		BMP->Load(handle);

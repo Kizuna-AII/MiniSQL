@@ -184,7 +184,7 @@ std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin,std
 					if (res[i].name == tmp) {
 						res[i].primary = 1;
 						res[i].unique = 1;
-						res[i].indexName = tableName + "#" + res[i].name;
+						
 						break;
 					}
 				}
