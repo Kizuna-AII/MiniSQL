@@ -406,6 +406,4 @@ void Buffer::BufferManager::TestMain()
 	std::cout << "New File Size = " << BM.GetFileSize() << std::endl;
 
 	getchar();
-
-	return 0;
 }
