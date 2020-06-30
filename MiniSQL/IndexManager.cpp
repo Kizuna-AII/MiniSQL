@@ -113,8 +113,14 @@ void Index::Tree::splitNode(Node _n){
 	int mid = _n.key.size() / 2;
 	for(int i = mid; i < _n.key.size(); i++)
 		sibling.key.push_back(_n.key[i]);
-	for(int i = mid; i < _n.ptr.size(); i++)
+	for(int i = mid; i < _n.ptr.size(); i++){
 		sibling.ptr.push_back(_n.ptr[i]);
+		if(sibling.isLeaf == false){
+			Node child = readNodeFromDisk(_n.ptr[i]);
+			child.parent = sibling.id;
+			writeNodeToDisk(child);
+		}
+	}
 	_n.key.resize(mid);
 	_n.ptr.resize(mid);
 	if(_n.isLeaf) _n.ptr.push_back(sibling.id);
@@ -210,7 +216,7 @@ Index::Node Index::Tree::findNode(std::string _key){
 }
 
 Index::Node Index::Tree::leftMostNode(){
-	Node node = root;
+	Node node = readNodeFromDisk(root);
 	while(!node.isLeaf)
 		node = readNodeFromDisk(node.ptr[0]);
 	return node;
@@ -332,7 +338,7 @@ std::set<int> Index::IndexManager::select(Common::Compares _con){
 	int loc = node.findKeyLoc(_con.value) - 1;
 
 	auto blockCeil = [](int offset)->int{
-		return offset / Buffer::BLOCKCAPACITY * Buffer::BLOCKCAPACITY;
+		return offset / Tree::BM->tmpBufferSize * Tree::BM->tmpBufferSize;
 	};
 
 	if(_con.ctype == Common::CompareType::je){
@@ -345,6 +351,7 @@ std::set<int> Index::IndexManager::select(Common::Compares _con){
 		while(node.id != -1){
 			while(loc < node.key.size()){
 				ret.insert(blockCeil(node.ptr[loc]));
+				loc++;
 			}
 			loc = 0;
 			node = trees[workspace].readNodeFromDisk(node.rightSibling());

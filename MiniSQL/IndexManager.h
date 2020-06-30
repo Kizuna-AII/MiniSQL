@@ -53,7 +53,7 @@ namespace Index{
 		
 		// 在当前的表格、列创建索引
 		// 必须给出该列的宽度（字节数），以确定B+树的叉数
-		void createIndex(int _datawidth = 50);
+		void createIndex(int _datawidth = 20);
 		
 		// 在当前的表格、列drop索引
 		void dropIndex();
