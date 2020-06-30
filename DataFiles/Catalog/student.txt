@@ -1,1 +1,0 @@
-student 4 sno student#sno 8 1 1 sname snameindex 16 1 0 sage #NULL# 0 0 0 sgender #NULL# 1 0 0 

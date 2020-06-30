@@ -341,6 +341,8 @@ std::set<int> Index::IndexManager::select(Common::Compares _con){
 	};
 
 	if(_con.ctype == Common::CompareType::je){
+		if (loc < 0)
+			loc = 0;
 		ret.insert(blockCeil(node.ptr[loc]));
 		return ret;
 	}
