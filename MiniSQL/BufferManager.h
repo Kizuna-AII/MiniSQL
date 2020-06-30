@@ -9,7 +9,6 @@
 
 
 constexpr size_t DEFAULTHANDLE = (size_t)4294967295;
-#define TEST
 
 namespace Buffer
 {
@@ -26,9 +25,6 @@ namespace Buffer
 
 	class BufferManager final
 	{
-#ifdef TEST
-	public:
-#endif
 		BlockNodeP buffer[BLOCKNUM];
 		size_t handleCount; // handle计数器，保证handle两两不同
 		std::map<int, int> handleIndexMap; // handle到Index的map
@@ -39,7 +35,7 @@ namespace Buffer
 		size_t ToIndex(const size_t & handle) const throw(const char *); // 转换handle为buffer下标，可能抛出不存在异常
 		
 		size_t GetFreeIndex() const throw(const char *); // 寻找一个空余的buffer页，可能抛出可写页已满异常
-	public:
+	public: // API层使用
 		BufferManager() noexcept;
 		~BufferManager() noexcept;
 		void Initialize() noexcept; // 初始化整个Buffer Manager
