@@ -71,7 +71,7 @@ public:
 					case 2: {//create table
 						string tName;
 						inter->GetString(fin, tName);
-						vector<Common::Attribute> attributes = inter->GetAttributes(fin);
+						vector<Common::Attribute> attributes = inter->GetAttributes(fin, tName);
 						inter->PeekEnd(fin);
 						api->CreateTable(tName, attributes);
 						break;
