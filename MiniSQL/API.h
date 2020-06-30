@@ -59,13 +59,13 @@ namespace API {
 		virtual std::string what() const { return ("Column " + this->msg + " don't exist!"); }
 	};
 	// INDEX_EXIST_ERROR : Create Index
-	class index_exist_error : mexception {
+	class index_exist_error : public mexception {
 	public:
 		index_exist_error(const std::string _msg) { this->msg = _msg; }
 		virtual std::string what() const { return ("Index " + this->msg + " already exists"); }
 	};
 	// INDEX_NOTFIND_ERROR : Delete Index
-	class index_notfind_error : mexception {
+	class index_notfind_error : public mexception {
 	public:
 		index_notfind_error(const std::string _msg) { this->msg = _msg; }
 		virtual std::string what() const { return ("Index " + this->msg + " don't exist!"); }

@@ -62,6 +62,8 @@ namespace Buffer
 			// 向handle对应的块读取数据，返回字符串可修改的直接引用（便于自由管理，但是十分危险）
 
 	public: // 文件读写函数
+		size_t tmpBufferSize;
+
 		void SetFilename(const std::string &filename, const size_t & handle = DEFAULTHANDLE);
 			// 设置handle对应的块的I/O文件名
 		std::string GetFilename(const size_t & handle = DEFAULTHANDLE) const;
@@ -82,6 +84,9 @@ namespace Buffer
 			// 返回该handle对应的硬盘文件的长度；若文件不存在抛出异常
 		void SetFileSize(const DWORD & size, const size_t & handle = DEFAULTHANDLE);
 			// 将该handle对应的硬盘文件进行长度修改（截短）；若文件不存在抛出异常
+
+	public: // 模块测试主程序
+		static void TestMain();
 	};
 
 };
