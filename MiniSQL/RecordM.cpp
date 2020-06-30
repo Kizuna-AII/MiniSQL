@@ -31,7 +31,7 @@ namespace Record{
 		}
 		
 		int nowpos = 0, nxtpos = 0;
-        while(nowpos < maxSize ){
+        while(nowpos + tupleSize < maxSize ){
 			Tuple tp(tupleSize, cbuffer + nowpos);
             int posL=nowpos;
             //top=0;
