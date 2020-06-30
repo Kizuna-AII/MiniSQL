@@ -168,7 +168,7 @@ std::vector<Common::Compares> Interpreter::GetConditions(std::istream & fin)
 	return res;
 }
 
-std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin)
+std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin,std::string tableName)
 {
 	vector<Attribute>res;
 	res.clear();
@@ -183,6 +183,8 @@ std::vector<Common::Attribute> Interpreter::GetAttributes(std::istream & fin)
 				for (int i = 0; i < res.size(); i++) {//±©Á¦²éÕÒ
 					if (res[i].name == tmp) {
 						res[i].primary = 1;
+						res[i].unique = 1;
+						res[i].indexName = tableName + "#" + res[i].name;
 						break;
 					}
 				}

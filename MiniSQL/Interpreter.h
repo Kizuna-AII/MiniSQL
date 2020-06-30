@@ -23,6 +23,6 @@ public:
 	//获取where语句对应的condition
 	std::vector<Common::Compares> GetConditions(std::istream &fin);
 	//获取create table需要的attributes
-	std::vector<Common::Attribute> GetAttributes(std::istream &fin);
+	std::vector<Common::Attribute> GetAttributes(std::istream &fin, std::string tableName);
 };
 
